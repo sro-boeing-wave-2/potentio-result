@@ -10,5 +10,3 @@ dotnet: 2.1
 script:
   - dotnet restore Result/
   - dotnet test Result/ResultViewAPI.Testing
-
-//to test
