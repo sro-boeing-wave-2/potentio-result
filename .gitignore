@@ -1,0 +1,6 @@
+.vscode
+*.vs*
+bin/
+.cache
+Result/Result/obj/
+Result/ResultViewAPI.Testing/obj

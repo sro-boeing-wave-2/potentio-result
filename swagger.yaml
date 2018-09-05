@@ -1,0 +1,92 @@
+swagger: "2.0"
+info:
+  version: "3.0"
+  title: Result
+  description: Showing the result and average
+definitions:
+  UserResult:
+    type: object
+    required:
+      - userId
+      - domainName
+      - averageScore
+      - scores
+    properties:
+      userId:
+        type: integer
+        format: int32
+      domainName:
+        type: string
+      averageScore:
+        type: number
+        format: double
+      scores:
+        type: array
+        items:
+          type: number
+          format: double
+  Quiz:
+    type: object
+    required:
+      - quizId
+      - userId
+      - domainName
+      - score
+      - time
+      - questionWiseResultDetails
+    properties:
+      quizId:
+        type: integer
+        format: int32
+      userId:
+        type: integer
+        format: int32
+      domainName:
+        type: string
+      score:
+        type: number
+        format: double
+        description: Total score of this quiz
+      time:
+        type: string
+        format: date-time
+        description: time of the quiz taken
+      questionWiseResultDetails:
+        type: object
+        description: details of each question, correct option, concept tag, user's answer,
+
+paths:
+  /userResult:
+    get:
+      description: Gets the details of the previous tests given for this domain as well as the average.
+      parameters:
+      - in: query
+        name: userId
+        type: integer
+        description: userId of the user.
+      - in: query
+        name: domainName
+        type: string
+        description: domain name of the test given by the user
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserResult'
+        404:
+          description: NOT FOUND
+  /userQuizResultDetails:
+    post:
+      description: Update quiz details of the user
+      responses:
+        201:
+          description: CREATED
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Quiz'
+        400:
+          description: BAD REQUEST    
+      
