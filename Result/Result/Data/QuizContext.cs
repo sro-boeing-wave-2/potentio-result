@@ -19,11 +19,11 @@ namespace Result.Data
                 _database = client.GetDatabase(settings.Value.Database);
         }
 
-        public IMongoCollection<UserQuizDetail> Quiz
+        public IMongoCollection<UserQuizDetail> UserQuizDetail
         {
             get
             {
-                return _database.GetCollection<UserQuizDetail>("Quiz"); //<Quiz> is the Document ,"Quiz" is the Collection in our QuizDb
+                return _database.GetCollection<UserQuizDetail>("UserQuizDetail"); //<Quiz> is the Document ,"Quiz" is the Collection in our QuizDb
             }
         }
 

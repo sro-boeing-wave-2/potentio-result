@@ -32,8 +32,8 @@ namespace Result.Controllers
             return Ok();
         }
 
+
         [HttpGet]
-       
         public async Task<IActionResult> UserResultForGivenQuizAndDomain([FromQuery] int userId ,[FromQuery] string domainName)
         {
             if (!ModelState.IsValid)
@@ -50,22 +50,21 @@ namespace Result.Controllers
             return Ok(userResult);
         }
 
-        public async Task<IActionResult> LastTestUserDomainDetails([FromQuery] int userId, [FromQuery] string domainName)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
-            var userResult = await _quizResultService.GetUserResults(userId, domainName);
+        //public async Task<IActionResult> LastTestUserDomainDetails([FromQuery] int userId, [FromQuery] string domainName)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+        //    var userResult = await _quizResultService.GetUserResults(userId, domainName);
+        //    if (userResult == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            if (userResult == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(userResult);
-        }
+        //    return Ok(userResult);
+        //}
         
     }
 }
