@@ -18,80 +18,23 @@ namespace Result.Services
             _context = new QuizContext(settings);
         }
 
-        public async Task<UserQuizDetail> AddQuiz(UserQuizDetail quiz)
+        public async Task<UserQuizResponse> AddQuiz(UserQuizResponse quiz)
         {
+            // inserting in userquizresponse, userquizdetail and updating userresult
 
-            quiz.Time = new DateTime();
-            await _context.UserQuizDetail.InsertOneAsync(quiz);
-
-            //Perform calculating tasks on the UserResults Collection
-            int userId = quiz.UserId;
-            UpdateUserResults(quiz);
+            await _context.UserQuizResponse.InsertOneAsync(quiz);
+            UserQuizDetail userQuizDetail =  UpdateUserQuizDetail(quiz);
+            UpdateUserResults(userQuizDetail);
             return quiz;
         }
 
         //Returns result of a user for a particular domain
         public async Task<UserResult> GetUserResults(int userId, string domainName)
         {
-            return await _context.userResult.Find(entry => entry.UserId == userId && entry.DomainName == domainName).FirstOrDefaultAsync();
+            return await _context.UserResult.Find(entry => entry.UserId == userId && entry.DomainName == domainName).FirstOrDefaultAsync();
         }
 
-        //public async Task<UserQuizDetail> GetQuizDetalis(string quizId)
-        //{
-        //    return await _context.UserQuizDetail
-        //}
-
-        //public async Task<> GetLastTestUserDomainResults(int userId, string domainName)
-        //{
-
-        //}
-
-
-
-
-        //Whenever a new Quiz is submitted by a user, the UserResult gets upadated
-        //public async void UpdateUserResultsOld(UserQuizDetail quiz)
-        //{
-        //    int userId = quiz.UserId;
-
-        //    //Calculate total score of this quiz
-        //    double newScore = calculateTotalScoreOfQuiz(quiz);
-        //    string domainName = quiz.Domain;
-
-        //    // Check whether an entry with same User and domain already exists or not
-        //    var userResultsEntry = await _context.userResult.Find(entryy => entryy.UserId.Equals(userId) && entryy.DomainName.Equals(domainName)).FirstOrDefaultAsync();
-
-        //    //If the entry with unique (user + domain) cannot be found in userResult, create a new entry and insert in the userResult
-        //    if (userResultsEntry == null)
-        //    {
-        //        List<double> scores = new List<double>();
-        //        scores.Add(newScore);
-        //        UserResult userResults = new UserResult()
-        //        {
-        //            UserId = userId,
-        //            DomainName = quiz.Domain,
-        //            AverageScore = newScore,
-        //            Scores = scores,
-        //        };
-        //        //Insert the newly found entry to the UserResult Collection
-        //        await _context.userResult.InsertOneAsync(userResults); 
-        //    }
-        //    // If the entry with unique (user + domain) is already in the userResult, update the existing entry
-        //    else
-        //    {
-        //        double averageScore = userResultsEntry.AverageScore;
-        //        List<double> scores = userResultsEntry.Scores;
-        //        int numOfEntry = scores.Count;
-        //        double totalScore = numOfEntry * averageScore;
-        //        double updatedTotalScore = totalScore + newScore;
-        //        updatedTotalScore = updatedTotalScore / (numOfEntry + 1);
-        //        scores.Add(newScore);
-        //        var filter = Builders<UserResult>.Filter.Eq(x => x.UserId, userId);
-        //        filter = filter & (Builders<UserResult>.Filter.Eq(x => x.DomainName, domainName));
-        //        var update = Builders<UserResult>.Update.Set(x => x.AverageScore, updatedTotalScore).Set(x => x.Scores, scores);
-        //        var result = await _context.userResult.UpdateOneAsync(filter, update);
-        //    }
-        //}
+        
 
 
         public async void UpdateUserResults(UserQuizDetail quiz)
@@ -110,11 +53,11 @@ namespace Result.Services
             tagWiseResults.Add(tagWiseResult);
 
             // Check whether an entry with same User and domain already exists or not
-            var userResultsEntry = await _context.userResult.Find(entryy => entryy.UserId.Equals(userId) && entryy.DomainName.Equals(domainName)).FirstOrDefaultAsync();
+            var userResultsEntry = await _context.UserResult.Find(entryy => entryy.UserId.Equals(userId) && entryy.DomainName.Equals(domainName)).FirstOrDefaultAsync();
 
             QuizResult quizResult = new QuizResult()
             {
-                _id = quiz._id,
+                QuizId = quiz.QuizId,
                 QuestionsAttempted = questionsList,
                 ObtainedScore = newObtainedScore,
                 TotalScore = newTotalScore,
@@ -136,7 +79,7 @@ namespace Result.Services
                     QuizResults = quizResults
                 };
                 //Insert the newly found entry to the UserResult Collection
-                await _context.userResult.InsertOneAsync(userResults);
+                await _context.UserResult.InsertOneAsync(userResults);
             }
 
             // If the entry with unique (user + domain) is already in the userResult, update the existing entry
@@ -157,7 +100,7 @@ namespace Result.Services
                 var filter = Builders<UserResult>.Filter.Eq(x => x.UserId, userId);
                 filter = filter & (Builders<UserResult>.Filter.Eq(x => x.DomainName, domainName));
                 var update = Builders<UserResult>.Update.Set(x => x.AveragePercentage, updatedTotalPercentage).Set(x => x.QuizResults, quizResults);
-                var result = await _context.userResult.UpdateOneAsync(filter, update);
+                var result = await _context.UserResult.UpdateOneAsync(filter, update);
             }
         }
 
@@ -196,6 +139,60 @@ namespace Result.Services
         public void getTagWiseResult(UserQuizDetail quiz,TagWiseResult tagWiseResult)
         {
 
+        }
+
+
+        public UserQuizDetail UpdateUserQuizDetail(UserQuizResponse userQuizResponse)
+        {
+            UserQuizDetail userQuizDetail = new UserQuizDetail();
+            List<QuestionAttempted> questionsAttempted = new List<QuestionAttempted>();
+
+
+            string quizId = userQuizResponse.QuizId;
+            int userId = userQuizResponse.UserId;
+            string domainName = userQuizResponse.DomainName;
+            List<Question> questionsList = userQuizResponse.QuestionsAttempted;
+
+            int questionCount = 1;
+
+            foreach (var item in questionsList)
+            {
+                string questionId = item.QuestionId;
+                string questionText = item.QuestionText;
+                List<string> options = item.Options;
+                string questionType = item.QuestionType;
+                string domain = item.Domain;
+                string[] conceptTags = item.ConceptTags;
+                int difficultyLevel = item.DifficultyLevel;
+                string userResponse = item.UserResponse;
+                string correctOption = item.CorrectOption;
+                Boolean isCorrect = item.IsCorrect;
+                
+                QuestionAttempted question = new QuestionAttempted();
+                question.QuestionId = questionId;
+                question.QuestionText = questionText;
+                question.QuestionNumber = questionCount++;
+                question.Options = options;
+                question.QuestionType = questionType;
+                question.ConceptTags = conceptTags;
+                question.DifficultyLevel = difficultyLevel;
+                question.Response = userResponse;
+                question.CorrectAns = correctOption;
+                question.IsCorrect = isCorrect;
+
+                questionsAttempted.Add(question);
+            }
+
+            
+            userQuizDetail.QuizId = quizId;
+            userQuizDetail.UserId = userId;
+            userQuizDetail.Domain = domainName;
+            userQuizDetail.Time = new DateTime();
+            userQuizDetail.QuestionsAttempted = questionsAttempted;
+
+            _context.UserQuizDetail.InsertOne(userQuizDetail);
+            
+            return userQuizDetail;
         }
 
     }

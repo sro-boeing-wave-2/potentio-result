@@ -8,7 +8,7 @@ namespace Result.Services
 {
     public interface IQuizResultService
     {
-        Task<UserQuizDetail> AddQuiz(UserQuizDetail quiz);
+        Task<UserQuizResponse> AddQuiz(UserQuizResponse quiz);
         Task<UserResult> GetUserResults(int userId, string domainName);
     }
 

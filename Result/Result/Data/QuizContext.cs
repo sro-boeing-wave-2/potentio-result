@@ -27,7 +27,7 @@ namespace Result.Data
             }
         }
 
-        public IMongoCollection<UserResult> userResult
+        public IMongoCollection<UserResult> UserResult
         {
             get
             {
@@ -35,7 +35,13 @@ namespace Result.Data
             }
         }
 
-
+        public IMongoCollection<UserQuizResponse> UserQuizResponse
+        {
+            get
+            {
+                return _database.GetCollection<UserQuizResponse>("UserQuizResponse");
+            }
+        }
 
     }
 }
