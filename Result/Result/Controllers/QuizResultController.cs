@@ -34,7 +34,7 @@ namespace Result.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> UserResultForGivenQuizAndDomain([FromQuery] int userId ,[FromQuery] string domainName)
+        public async Task<IActionResult> UserResultForGivenQuizAndDomain([FromQuery] int userId, [FromQuery] string domainName)
         {
             if (!ModelState.IsValid)
             {
@@ -43,11 +43,16 @@ namespace Result.Controllers
 
             var userResult = await _quizResultService.GetUserResults(userId, domainName);
 
-            if(userResult == null)
+            if (userResult == null)
             {
                 return NotFound();
             }
             return Ok(userResult);
+        }
+
+        public async Task<> UserResultByQuizId([FromQuery] string quizId)
+        {
+            var quizResult = await _quizResultService
         }
 
 
@@ -65,6 +70,9 @@ namespace Result.Controllers
 
         //    return Ok(userResult);
         //}
-        
+
+
+
+
     }
 }
