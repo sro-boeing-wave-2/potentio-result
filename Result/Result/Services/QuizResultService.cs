@@ -36,6 +36,10 @@ namespace Result.Services
             return await _context.userResult.Find(entry => entry.UserId == userId && entry.DomainName == domainName).FirstOrDefaultAsync();
         }
 
+        public async Task<UserQuizDetail> GetQuizDetalis(string quizId)
+        {
+            return await _context.UserQuizDetail
+        }
 
         //public async Task<> GetLastTestUserDomainResults(int userId, string domainName)
         //{
