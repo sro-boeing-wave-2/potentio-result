@@ -50,10 +50,10 @@ namespace Result.Controllers
             return Ok(userResult);
         }
 
-        public async Task<> UserResultByQuizId([FromQuery] string quizId)
-        {
-            var quizResult = await _quizResultService
-        }
+        //public async Task<> UserResultByQuizId([FromQuery] string quizId)
+        //{
+        //    var quizResult = await _quizResultService
+        //}
 
 
         //public async Task<IActionResult> LastTestUserDomainDetails([FromQuery] int userId, [FromQuery] string domainName)
