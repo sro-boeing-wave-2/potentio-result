@@ -48,9 +48,9 @@ namespace Result.Services
             string domainName = quiz.Domain;
             List<QuestionAttempted> questionsList = quiz.QuestionsAttempted;
             List<TagWiseResult> tagWiseResults = new List<TagWiseResult>();
-            TagWiseResult tagWiseResult = new TagWiseResult();
-            getTagWiseResult(quiz, tagWiseResult);
-            tagWiseResults.Add(tagWiseResult);
+            //TagWiseResult tagWiseResult = new TagWiseResult();
+            getTagWiseResult(quiz, tagWiseResults);
+            //tagWiseResults.Add(tagWiseResult);
 
             // Check whether an entry with same User and domain already exists or not
             var userResultsEntry = await _context.UserResult.Find(entryy => entryy.UserId.Equals(userId) && entryy.DomainName.Equals(domainName)).FirstOrDefaultAsync();
@@ -136,8 +136,39 @@ namespace Result.Services
             List<QuestionAttempted> questionAttemptedList = quizDetail.QuestionsAttempted;
         }
 
-        public void getTagWiseResult(UserQuizDetail quiz,TagWiseResult tagWiseResult)
+        public void getTagWiseResult(UserQuizDetail quiz,List<TagWiseResult> tagWiseResult)
         {
+            List<QuestionAttempted> questions = quiz.QuestionsAttempted;
+            HashSet<string> labels = new HashSet<string>();
+            Dictionary<string, int> totalTagCount = new Dictionary<string, int>();
+            Dictionary<string, int> correctTagCount = new Dictionary<string, int>();
+
+            foreach (var item in questions)
+            {
+                labels.UnionWith(new HashSet<string>(item.ConceptTags));
+            }
+
+            foreach (var item in labels)
+            {
+                totalTagCount.Add(item, 0);
+                correctTagCount.Add(item, 0);
+                foreach (var question in questions)
+                {
+                    if (question.ConceptTags.Contains(item))
+                    {
+                        totalTagCount[item] += 1;
+                        if (question.IsCorrect) correctTagCount[item] += 1;
+                    }
+                }
+                TagWiseResult tag = new TagWiseResult();
+                tag.TagName = item;
+                tag.TagTotalQuestCount = totalTagCount[item];
+                tag.TagCorrectAnsCount = correctTagCount[item];
+                tag.TagCorrectPercentage = ((float)correctTagCount[item] / (float)totalTagCount[item]) * 100;
+                tagWiseResult.Add(tag);
+            }
+
+            
 
         }
 
@@ -194,6 +225,5 @@ namespace Result.Services
             
             return userQuizDetail;
         }
-
     }
 }
