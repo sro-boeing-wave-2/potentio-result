@@ -36,6 +36,14 @@ namespace Result
             });
             services.AddTransient<IQuizResultService, QuizResultService>();
 
+            services.AddCors(o => o.AddPolicy("CorsPolicy", b =>
+               b.AllowCredentials()
+               .AllowAnyOrigin()
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+           ));
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,6 +59,8 @@ namespace Result
             }
 
             app.UseHttpsRedirection();
+            app.UseCors("CorsPolicy");
+
             app.UseMvc();
         }
     }

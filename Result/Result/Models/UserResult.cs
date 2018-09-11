@@ -44,11 +44,11 @@ namespace Result.Models
     {
         public string TagName { get; set; }
 
-        public double TagScoreObtained { get; set; }
+        public double TagCorrectAnsCount { get; set; }
 
-        public double TagScoreTotal { get; set; }
+        public double TagTotalQuestCount { get; set; }
 
-        public double TagScorePercentage { get; set; }
+        public double TagCorrectPercentage { get; set; }
     }
 }
 
