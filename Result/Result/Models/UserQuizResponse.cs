@@ -30,7 +30,7 @@ namespace Result.Models
 
         public string QuestionText { get; set; }
 
-        public List<string> Options { get; set; }
+        public List<Options> OptionList { get; set; }
 
         public string QuestionType { get; set; }
 
@@ -40,10 +40,15 @@ namespace Result.Models
 
         public int DifficultyLevel { get; set; }
 
-        public string UserResponse { get; set; }
+        public string userResponse { get; set; }
 
         public bool IsCorrect { get; set; }
 
         public string CorrectOption { get; set; }
+    }
+
+    public class Options
+    {
+        public string Option { get; set; }
     }
 }

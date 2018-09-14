@@ -29,11 +29,27 @@ namespace Result.Services
         }
 
         //Returns result of a user for a particular domain
-        public async Task<UserResult> GetUserResults(int userId, string domainName)
+        public async Task<UserResult> GetUserResultsFromUserIdAndDomain(int userId, string domainName)
         {
             return await _context.UserResult.Find(entry => entry.UserId == userId && entry.DomainName == domainName).FirstOrDefaultAsync();
         }
 
+
+        //Returns result of a user for a particular domain
+        public async Task<UserResult> GetUserResultsFromQuizId(string quizId)
+        {
+            var x = _context.UserResult.AsQueryable<UserResult>().Where(u => u.QuizResults.Any(a => a.QuizId == quizId)).FirstOrDefault();
+            return await Task.FromResult(x);
+            //return await _context.UserResult.Find(e => e.QuizResults.Find(u => u.QuizId == quizId));
+            //return await _context.UserResult.Find(entry => entry.UserId == 0 && entry.DomainName == "").FirstOrDefaultAsync();
+            // remove after testing
+        }
+
+        public async Task<IEnumerable<UserResult>> GetAllUserResult()
+        {
+            var x = _context.UserResult.Find(q => q.UserId>0);
+            return  await x.ToListAsync();
+        }
         
 
 
@@ -190,12 +206,12 @@ namespace Result.Services
             {
                 string questionId = item.QuestionId;
                 string questionText = item.QuestionText;
-                List<string> options = item.Options;
+                List<Result.Models.Options> options = item.OptionList;
                 string questionType = item.QuestionType;
                 string domain = item.Domain;
                 string[] conceptTags = item.ConceptTags;
                 int difficultyLevel = item.DifficultyLevel;
-                string userResponse = item.UserResponse;
+                string userResponse = item.userResponse;
                 string correctOption = item.CorrectOption;
                 Boolean isCorrect = item.IsCorrect;
                 
@@ -203,7 +219,12 @@ namespace Result.Services
                 question.QuestionId = questionId;
                 question.QuestionText = questionText;
                 question.QuestionNumber = questionCount++;
-                question.Options = options;
+                List<string> optionList = new List<string>();
+                foreach (var option in options)
+                {
+                    optionList.Add(option.Option);
+                }
+                question.Options = optionList;
                 question.QuestionType = questionType;
                 question.ConceptTags = conceptTags;
                 question.DifficultyLevel = difficultyLevel;
@@ -213,7 +234,6 @@ namespace Result.Services
 
                 questionsAttempted.Add(question);
             }
-
             
             userQuizDetail.QuizId = quizId;
             userQuizDetail.UserId = userId;

@@ -34,14 +34,14 @@ namespace Result.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> UserResultForGivenQuizAndDomain([FromQuery (Name = "userId")] int userId, [FromQuery(Name = "domainName")] string domainName)
+        public async Task<IActionResult> UserResultForGivenUserIdAndDomain([FromQuery(Name = "userId")] int userId, [FromQuery(Name = "domainName")] string domainName)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var userResult = await _quizResultService.GetUserResults(userId, domainName);
+            var userResult = await _quizResultService.GetUserResultsFromUserIdAndDomain(userId, domainName);
 
             if (userResult == null)
             {
@@ -50,29 +50,38 @@ namespace Result.Controllers
             return Ok(userResult);
         }
 
-        //public async Task<> UserResultByQuizId([FromQuery] string quizId)
-        //{
-        //    var quizResult = await _quizResultService
-        //}
+        [HttpGet("quizId/{quizId}")]
+        public async Task<IActionResult> UserResultByQuizId([FromRoute] string quizId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userResult = await _quizResultService.GetUserResultsFromQuizId(quizId);
+
+            if (userResult == null)
+            {
+                return NotFound("no such entry");
+            }
+            return Ok(userResult);
+        }
 
 
-        //public async Task<IActionResult> LastTestUserDomainDetails([FromQuery] int userId, [FromQuery] string domainName)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //    var userResult = await _quizResultService.GetUserResults(userId, domainName);
-        //    if (userResult == null)
-        //    {
-        //        return NotFound();
-        //    }
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllUserResult()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userResult = await _quizResultService.GetAllUserResult();
 
-        //    return Ok(userResult);
-        //}
-
-
-
-
+            if (userResult == null)
+            {
+                return NotFound("no such entry");
+            }
+            return Ok(userResult);
+        }
+        
     }
 }

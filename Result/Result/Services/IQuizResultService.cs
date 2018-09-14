@@ -9,7 +9,9 @@ namespace Result.Services
     public interface IQuizResultService
     {
         Task<UserQuizResponse> AddQuiz(UserQuizResponse quiz);
-        Task<UserResult> GetUserResults(int userId, string domainName);
+        Task<UserResult> GetUserResultsFromUserIdAndDomain(int userId, string domainName);
+        Task<UserResult> GetUserResultsFromQuizId(string quizId);
+        Task<IEnumerable<UserResult>> GetAllUserResult();
     }
 
 }

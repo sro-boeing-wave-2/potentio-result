@@ -49,6 +49,8 @@ namespace Result.Models
         public double TagTotalQuestCount { get; set; }
 
         public double TagCorrectPercentage { get; set; }
+
+        public double TagRating { get; set; }
     }
 }
 
