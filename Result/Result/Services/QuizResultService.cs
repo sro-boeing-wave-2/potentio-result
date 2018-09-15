@@ -158,10 +158,13 @@ namespace Result.Services
             HashSet<string> labels = new HashSet<string>();
             Dictionary<string, int> totalTagCount = new Dictionary<string, int>();
             Dictionary<string, int> correctTagCount = new Dictionary<string, int>();
+            Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
+            Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
 
             foreach (var item in questions)
             {
                 labels.UnionWith(new HashSet<string>(item.ConceptTags));
+
             }
 
             foreach (var item in labels)
@@ -173,14 +176,23 @@ namespace Result.Services
                     if (question.ConceptTags.Contains(item))
                     {
                         totalTagCount[item] += 1;
-                        if (question.IsCorrect) correctTagCount[item] += 1;
+                        if (question.IsCorrect)
+                        {
+                            correctTagCount[item] += 1;
+                            tagRatingList[item] += 1 / (question.ConceptTags.Length);
+                        }
                     }
                 }
+
+                tagRatingList[item] /= totalTagCount[item];
+
+
                 TagWiseResult tag = new TagWiseResult();
                 tag.TagName = item;
                 tag.TagTotalQuestCount = totalTagCount[item];
                 tag.TagCorrectAnsCount = correctTagCount[item];
                 tag.TagCorrectPercentage = ((float)correctTagCount[item] / (float)totalTagCount[item]) * 100;
+                tag.TagRating = tagRatingList[item];
                 tagWiseResult.Add(tag);
             }
 
