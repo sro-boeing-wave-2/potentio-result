@@ -61,6 +61,7 @@ namespace Result.Services
             double newTotalScore = calculateTotalScoreOfQuiz(quiz);
             double newObtainedScore = calculateObtainedScoreOfQuiz(quiz);
             double newPercentageScore = ((newObtainedScore * 100 )/ newTotalScore);
+            newPercentageScore = Math.Round(newPercentageScore, 2);
             string domainName = quiz.Domain;
             List<QuestionAttempted> questionsList = quiz.QuestionsAttempted;
             List<TagWiseResult> tagWiseResults = new List<TagWiseResult>();
@@ -110,7 +111,7 @@ namespace Result.Services
                 double totalPercentage = numOfEntry * averagePercentage;
                 double updatedTotalPercentage = totalPercentage + newPercentageScore;
                 updatedTotalPercentage = updatedTotalPercentage / (numOfEntry + 1);
-
+                updatedTotalPercentage = Math.Round(updatedTotalPercentage, 2);
                 userResultsEntry.AveragePercentage = updatedTotalPercentage;
                 
                 var filter = Builders<UserResult>.Filter.Eq(x => x.UserId, userId);
@@ -171,6 +172,7 @@ namespace Result.Services
             {
                 totalTagCount.Add(item, 0);
                 correctTagCount.Add(item, 0);
+                tagRatingList.Add(item, 0);
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
@@ -179,25 +181,25 @@ namespace Result.Services
                         if (question.IsCorrect)
                         {
                             correctTagCount[item] += 1;
-                            tagRatingList[item] += 1 / (question.ConceptTags.Length);
+                            tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
                         }
                     }
                 }
 
                 tagRatingList[item] /= totalTagCount[item];
+                tagRatingList[item] = Math.Round(tagRatingList[item], 2);
 
+                double tagCorrectPercentage = ((double)correctTagCount[item] / (double)totalTagCount[item]) * 100;
+                tagCorrectPercentage = Math.Round(tagCorrectPercentage, 2);
 
                 TagWiseResult tag = new TagWiseResult();
                 tag.TagName = item;
                 tag.TagTotalQuestCount = totalTagCount[item];
                 tag.TagCorrectAnsCount = correctTagCount[item];
-                tag.TagCorrectPercentage = ((float)correctTagCount[item] / (float)totalTagCount[item]) * 100;
+                tag.TagCorrectPercentage = tagCorrectPercentage;
                 tag.TagRating = tagRatingList[item];
                 tagWiseResult.Add(tag);
             }
-
-            
-
         }
 
 
