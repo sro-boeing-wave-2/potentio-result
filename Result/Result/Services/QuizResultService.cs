@@ -23,7 +23,7 @@ namespace Result.Services
             // inserting in userquizresponse, userquizdetail and updating userresult
 
             await _context.UserQuizResponse.InsertOneAsync(quiz);
-            UserQuizDetail userQuizDetail =  UpdateUserQuizDetail(quiz);
+            UserQuizDetail userQuizDetail = UpdateUserQuizDetail(quiz);
             UpdateUserResults(userQuizDetail);
             return quiz;
         }
@@ -47,10 +47,10 @@ namespace Result.Services
 
         public async Task<IEnumerable<UserResult>> GetAllUserResult()
         {
-            var x = _context.UserResult.Find(q => q.UserId>0);
-            return  await x.ToListAsync();
+            var x = _context.UserResult.Find(q => q.UserId > 0);
+            return await x.ToListAsync();
         }
-        
+
 
 
         public async void UpdateUserResults(UserQuizDetail quiz)
@@ -60,14 +60,13 @@ namespace Result.Services
             //Calculate total score of this quiz
             double newTotalScore = calculateTotalScoreOfQuiz(quiz);
             double newObtainedScore = calculateObtainedScoreOfQuiz(quiz);
-            double newPercentageScore = ((newObtainedScore * 100 )/ newTotalScore);
+            double newPercentageScore = ((newObtainedScore * 100) / newTotalScore);
             newPercentageScore = Math.Round(newPercentageScore, 2);
             string domainName = quiz.Domain;
             List<QuestionAttempted> questionsList = quiz.QuestionsAttempted;
             List<TagWiseResult> tagWiseResults = new List<TagWiseResult>();
-            //TagWiseResult tagWiseResult = new TagWiseResult();
             getTagWiseResult(quiz, tagWiseResults);
-            //tagWiseResults.Add(tagWiseResult);
+
 
             // Check whether an entry with same User and domain already exists or not
             var userResultsEntry = await _context.UserResult.Find(entryy => entryy.UserId.Equals(userId) && entryy.DomainName.Equals(domainName)).FirstOrDefaultAsync();
@@ -80,20 +79,24 @@ namespace Result.Services
                 TotalScore = newTotalScore,
                 PercentageScore = newPercentageScore,
                 TagWiseResults = tagWiseResults
+
             };
-            
+
             //If the entry with unique (user + domain) cannot be found in userResult, create a new entry and insert in the userResult
             if (userResultsEntry == null)
             {
                 List<QuizResult> quizResults = new List<QuizResult>();
                 quizResults.Add(quizResult);
-
+                List<CumulativeTagScore> cumulativeTagScores = new List<CumulativeTagScore>();
+                getCumulativeTagWiseResultFirst(quiz, cumulativeTagScores);
                 UserResult userResults = new UserResult()
                 {
                     UserId = userId,
                     DomainName = domainName,
                     AveragePercentage = newPercentageScore,
-                    QuizResults = quizResults
+                    QuizResults = quizResults,
+                    TagWiseCumulativeScore = cumulativeTagScores
+
                 };
                 //Insert the newly found entry to the UserResult Collection
                 await _context.UserResult.InsertOneAsync(userResults);
@@ -105,18 +108,24 @@ namespace Result.Services
                 List<QuizResult> quizResults = userResultsEntry.QuizResults;
                 quizResults.Add(quizResult);
 
+                //List<CumulativeTagScore> cumulativeTagScores = userResultsEntry.TagWiseCumulativeScore;
+                List<CumulativeTagScore> cumulativeTagScores = getCumulativeTagWiseResult(quiz, userResultsEntry);
+
                 double averagePercentage = userResultsEntry.AveragePercentage;
-                
+
                 int numOfEntry = userResultsEntry.QuizResults.Count;
                 double totalPercentage = numOfEntry * averagePercentage;
                 double updatedTotalPercentage = totalPercentage + newPercentageScore;
                 updatedTotalPercentage = updatedTotalPercentage / (numOfEntry + 1);
                 updatedTotalPercentage = Math.Round(updatedTotalPercentage, 2);
                 userResultsEntry.AveragePercentage = updatedTotalPercentage;
-                
+
                 var filter = Builders<UserResult>.Filter.Eq(x => x.UserId, userId);
                 filter = filter & (Builders<UserResult>.Filter.Eq(x => x.DomainName, domainName));
-                var update = Builders<UserResult>.Update.Set(x => x.AveragePercentage, updatedTotalPercentage).Set(x => x.QuizResults, quizResults);
+                var update = Builders<UserResult>.Update
+                    .Set(x => x.AveragePercentage, updatedTotalPercentage)
+                    .Set(x => x.QuizResults, quizResults)
+                    .Set(x => x.TagWiseCumulativeScore,cumulativeTagScores);
                 var result = await _context.UserResult.UpdateOneAsync(filter, update);
             }
         }
@@ -127,9 +136,9 @@ namespace Result.Services
             List<QuestionAttempted> questionAttemptedList = quizDetail.QuestionsAttempted;
             double score = 0;
             double multiplyFactor = 1;
-            foreach(QuestionAttempted quest in questionAttemptedList)
+            foreach (QuestionAttempted quest in questionAttemptedList)
             {
-                if (quest.IsCorrect) score += quest.DifficultyLevel*multiplyFactor;   
+                if (quest.IsCorrect) score += quest.DifficultyLevel * multiplyFactor;
             }
             return score;
         }
@@ -139,9 +148,9 @@ namespace Result.Services
             List<QuestionAttempted> questionAttemptedList = quizDetail.QuestionsAttempted;
             double score = 0;
             double multiplyFactor = 1;
-            foreach(QuestionAttempted quest in questionAttemptedList)
+            foreach (QuestionAttempted quest in questionAttemptedList)
             {
-                score += quest.DifficultyLevel*multiplyFactor;   
+                score += quest.DifficultyLevel * multiplyFactor;
             }
             return score;
         }
@@ -153,7 +162,7 @@ namespace Result.Services
             List<QuestionAttempted> questionAttemptedList = quizDetail.QuestionsAttempted;
         }
 
-        public void getTagWiseResult(UserQuizDetail quiz,List<TagWiseResult> tagWiseResult)
+        public void getTagWiseResult(UserQuizDetail quiz, List<TagWiseResult> tagWiseResult)
         {
             List<QuestionAttempted> questions = quiz.QuestionsAttempted;
             HashSet<string> labels = new HashSet<string>();
@@ -228,7 +237,7 @@ namespace Result.Services
                 string userResponse = item.userResponse;
                 string correctOption = item.CorrectOption;
                 Boolean isCorrect = item.IsCorrect;
-                
+
                 QuestionAttempted question = new QuestionAttempted();
                 question.QuestionId = questionId;
                 question.QuestionText = questionText;
@@ -248,7 +257,7 @@ namespace Result.Services
 
                 questionsAttempted.Add(question);
             }
-            
+
             userQuizDetail.QuizId = quizId;
             userQuizDetail.UserId = userId;
             userQuizDetail.Domain = domainName;
@@ -256,8 +265,108 @@ namespace Result.Services
             userQuizDetail.QuestionsAttempted = questionsAttempted;
 
             _context.UserQuizDetail.InsertOne(userQuizDetail);
-            
+
             return userQuizDetail;
         }
+
+
+        public void getCumulativeTagWiseResultFirst(UserQuizDetail quiz, List<CumulativeTagScore> cumulativeTagScore)
+        {
+            List<QuestionAttempted> questions = quiz.QuestionsAttempted;
+            HashSet<string> labels = new HashSet<string>();
+            Dictionary<string, int> totalTagCount = new Dictionary<string, int>();
+            Dictionary<string, int> correctTagCount = new Dictionary<string, int>();
+            Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
+            Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
+
+            foreach (var item in questions)
+            {
+                labels.UnionWith(new HashSet<string>(item.ConceptTags));
+
+            }
+
+            foreach (var item in labels)
+            {
+                totalTagCount.Add(item, 0);
+                tagRatingList.Add(item, 0);
+                foreach (var question in questions)
+                {
+                    if (question.ConceptTags.Contains(item))
+                    {
+                        totalTagCount[item] += 1;
+                        if (question.IsCorrect)
+                        {
+                            tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
+                        }
+                    }
+                }
+                tagRatingList[item] /= totalTagCount[item];
+                tagRatingList[item] = Math.Round(tagRatingList[item], 2);
+                CumulativeTagScore tag = new CumulativeTagScore();
+                tag.TagName = item;
+                tag.TagRating = tagRatingList[item];
+                cumulativeTagScore.Add(tag);
+            }
+        }
+
+
+
+        public List<CumulativeTagScore> getCumulativeTagWiseResult(UserQuizDetail quiz, UserResult userResult)
+        {
+
+            List<QuestionAttempted> questions = quiz.QuestionsAttempted;
+            HashSet<string> labels = new HashSet<string>();
+            Dictionary<string, int> totalTagCount = new Dictionary<string, int>();
+            Dictionary<string, int> correctTagCount = new Dictionary<string, int>();
+            Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
+            Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
+
+            foreach (var item in questions)
+            {
+                labels.UnionWith(new HashSet<string>(item.ConceptTags));
+            }
+            List<CumulativeTagScore> newCumulativeTagScores = new List<CumulativeTagScore>();
+
+            foreach (var item in labels)
+            {
+                totalTagCount.Add(item, 0);
+                tagRatingList.Add(item, 0);
+                foreach (var question in questions)
+                {
+                    if (question.ConceptTags.Contains(item))
+                    {
+                        totalTagCount[item] += 1;
+                        if (question.IsCorrect)
+                        {
+                            tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
+                        }
+                    }
+                }
+                tagRatingList[item] /= totalTagCount[item];
+                tagRatingList[item] = Math.Round(tagRatingList[item], 2);
+            }
+            //calculated the value for the current test, now we'll calculate the aggregate
+
+            int numOfQuiz = userResult.QuizResults.Count;
+            List<CumulativeTagScore> cumulativeTagScores = userResult.TagWiseCumulativeScore;
+
+            foreach (var item in cumulativeTagScores)
+            {
+                CumulativeTagScore score = new CumulativeTagScore();
+                string tagName = item.TagName;
+                double tagRating = item.TagRating;
+
+                double oldTotalTemp = tagRating * numOfQuiz;
+                double newTotalTemp = oldTotalTemp + tagRatingList[tagName];
+                double newTagRating = newTotalTemp / (numOfQuiz + 1);
+                score.TagName = tagName;
+                score.TagRating = newTagRating;
+                newCumulativeTagScores.Add(score);
+            }
+            
+            return newCumulativeTagScores;
+        }
     }
+
+
 }
