@@ -1,24 +1,24 @@
-//using Result.Models;
-//using System;
-//using Xunit;
-//using System.Linq;
-//using System.Collections.Generic;
-//using Result.Services;
-//using Result.Controllers;
-//using System.Threading.Tasks;
-//using Moq;
-//using MongoDB.Driver;
-////using Microsoft.AspNetCore;
+using Result.Models;
+using System;
+using Xunit;
+using System.Linq;
+using System.Collections.Generic;
+using Result.Services;
+using Result.Controllers;
+using System.Threading.Tasks;
+using Moq;
+using MongoDB.Driver;
+//using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
+
+
 //using Microsoft.AspNetCore.Mvc;
 
 
-////using Microsoft.AspNetCore.Mvc;
-
-
-//namespace ResultViewAPI.Testing
-//{
-//    public class ResultApiTest
-//    {
+namespace ResultViewAPI.Testing
+{
+   public class ResultApiTest
+   {
 
 //        [Fact]
 //        public async void GetUserResultTest()
@@ -57,6 +57,6 @@
 
 
 //        }
-//    }
-//}   
+   }
+}   
 
