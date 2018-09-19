@@ -82,6 +82,23 @@ namespace Result.Controllers
             }
             return Ok(userResult);
         }
-        
+
+        [HttpGet("getDomains")]
+        public async Task<IActionResult> DistinctDomainUserList([FromQuery(Name = "userId")] int userId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userResult = _quizResultService.GetAllDistinctDomainUserList(userId);
+
+            if (userResult == null)
+            {
+                return NotFound("no such entry");
+            }
+            return Ok(userResult);
+        }
+
+
     }
 }

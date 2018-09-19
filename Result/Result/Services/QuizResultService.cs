@@ -51,6 +51,16 @@ namespace Result.Services
             return await x.ToListAsync();
         }
 
+        public HashSet<string> GetAllDistinctDomainUserList(int userId)
+        {
+            var x = _context.UserResult.Find(y => y.UserId == userId).ToList();
+            HashSet<String> domains = new HashSet<string>();
+            foreach (var item in x)
+            {
+                domains.Add(item.DomainName);
+            }
+            return domains;
+        }
 
 
         public async void UpdateUserResults(UserQuizDetail quiz)

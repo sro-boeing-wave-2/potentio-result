@@ -12,6 +12,7 @@ namespace Result.Services
         Task<UserResult> GetUserResultsFromUserIdAndDomain(int userId, string domainName);
         Task<UserResult> GetUserResultsFromQuizId(string quizId);
         Task<IEnumerable<UserResult>> GetAllUserResult();
+        HashSet<string> GetAllDistinctDomainUserList(int userId);
     }
 
 }
