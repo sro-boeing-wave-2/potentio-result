@@ -28,14 +28,14 @@ namespace Result.Services
             return quiz;
         }
 
-        //Returns result of a user for a particular domain
+        //Returns result of a user for a particular domain using userId and domain
         public async Task<UserResult> GetUserResultsFromUserIdAndDomain(int userId, string domainName)
         {
             return await _context.UserResult.Find(entry => entry.UserId == userId && entry.DomainName == domainName).FirstOrDefaultAsync();
         }
 
 
-        //Returns result of a user for a particular domain
+        //Returns result of a user for a particular domain using only quizId
         public async Task<UserResult> GetUserResultsFromQuizId(string quizId)
         {
             var x = _context.UserResult.AsQueryable<UserResult>().Where(u => u.QuizResults.Any(a => a.QuizId == quizId)).FirstOrDefault();
@@ -65,7 +65,7 @@ namespace Result.Services
             string domainName = quiz.Domain;
             List<QuestionAttempted> questionsList = quiz.QuestionsAttempted;
             List<TagWiseResult> tagWiseResults = new List<TagWiseResult>();
-            getTagWiseResult(quiz, tagWiseResults);
+            getTagWiseResult(quiz, tagWiseResults);                             //calculates the tagwise result for this quiz
 
 
             // Check whether an entry with same User and domain already exists or not
@@ -88,7 +88,7 @@ namespace Result.Services
                 List<QuizResult> quizResults = new List<QuizResult>();
                 quizResults.Add(quizResult);
                 List<CumulativeTagScore> cumulativeTagScores = new List<CumulativeTagScore>();
-                getCumulativeTagWiseResultFirst(quiz, cumulativeTagScores);
+                getCumulativeTagWiseResultFirst(quiz, cumulativeTagScores);                     //calculate cumulative tag wise score
                 UserResult userResults = new UserResult()
                 {
                     UserId = userId,
@@ -96,7 +96,6 @@ namespace Result.Services
                     AveragePercentage = newPercentageScore,
                     QuizResults = quizResults,
                     TagWiseCumulativeScore = cumulativeTagScores
-
                 };
                 //Insert the newly found entry to the UserResult Collection
                 await _context.UserResult.InsertOneAsync(userResults);
@@ -174,7 +173,6 @@ namespace Result.Services
             foreach (var item in questions)
             {
                 labels.UnionWith(new HashSet<string>(item.ConceptTags));
-
             }
 
             foreach (var item in labels)
@@ -359,6 +357,7 @@ namespace Result.Services
                 double oldTotalTemp = tagRating * numOfQuiz;
                 double newTotalTemp = oldTotalTemp + tagRatingList[tagName];
                 double newTagRating = newTotalTemp / (numOfQuiz + 1);
+                newTagRating = Math.Round(newTagRating, 2);
                 score.TagName = tagName;
                 score.TagRating = newTagRating;
                 newCumulativeTagScores.Add(score);
