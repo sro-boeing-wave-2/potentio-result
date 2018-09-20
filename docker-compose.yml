@@ -1,14 +1,13 @@
 version: "3"
 services:
   web:
-     container_name: docker-mongo
-     build: ./Result/Result .
-     ports:
-         - "80:80"
-     depends_on:
-         - db
+    build: ./Result/Result/
+    depends_on:
+        - db
+    expose:
+        - "80"
+    labels:
+      - "SERVICE_NAME=Result"
+      - "SERVICE_TAGS=ResultTag"
   db:
-     container_name: mongo
-     image: "mongo:latest"
-     ports:
-         - "27017:27017"
+    image: "mongo:latest"
