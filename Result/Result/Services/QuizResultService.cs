@@ -127,12 +127,12 @@ namespace Result.Services
                 List<CumulativeTagScore> cumulativeTagScores = getCumulativeTagWiseResult(quiz, userResultsEntry);
 
                 double averagePercentage = userResultsEntry.AveragePercentage;
-<<<<<<< HEAD
 
-                int numOfEntry = quizResults.Count;
-=======
+
+                
+
                 int numOfEntry = userResultsEntry.QuizResults.Count;
->>>>>>> 42ff5253791c881b363d874199c9a09bcac79d90
+
                 double totalPercentage = numOfEntry * averagePercentage;
                 double updatedTotalPercentage = totalPercentage + newPercentageScore;
                 updatedTotalPercentage = updatedTotalPercentage / (numOfEntry + 1);
