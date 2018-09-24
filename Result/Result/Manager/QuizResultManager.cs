@@ -1,4 +1,3 @@
-﻿using Manager.QuizResultManager;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Result.Data;
@@ -8,58 +7,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Result.Services
+
+namespace Manager.QuizResultManager
 {
-    public class QuizResultService : IQuizResultService
+
+    //This class is not used for now, but can be used, if we want to migrate some code from the Service class.
+    //right now the code is present in the service class, so you may ignore this.
+
+    public class QuizResultManager
     {
+
         private readonly QuizContext _context = null;
 
-        public QuizResultService(IOptions<Settings> settings)
+        public QuizResultManager(IOptions<Settings> settings)
         {
             _context = new QuizContext(settings);
-        }
-
-        public async Task<UserQuizResponse> AddQuiz(UserQuizResponse quiz)
-        {
-            // inserting in userquizresponse, userquizdetail and updating userresult
-            await _context.UserQuizResponse.InsertOneAsync(quiz);
-            UserQuizDetail userQuizDetail = UpdateUserQuizDetail(quiz);
-            UpdateUserResults(userQuizDetail);
-            return quiz;
-        }
-
-        //Returns result of a user for a particular domain using userId and domain
-        public async Task<UserResult> GetUserResultsFromUserIdAndDomain(int userId, string domainName)
-        {
-            return await _context.UserResult.Find(entry => entry.UserId == userId && entry.DomainName == domainName).FirstOrDefaultAsync();
-        }
-
-
-        //Returns result of a user for a particular domain using only quizId
-        public async Task<UserResult> GetUserResultsFromQuizId(string quizId)
-        {
-            var x = _context.UserResult.AsQueryable<UserResult>().Where(u => u.QuizResults.Any(a => a.QuizId == quizId)).FirstOrDefault();
-            return await Task.FromResult(x);
-            //return await _context.UserResult.Find(e => e.QuizResults.Find(u => u.QuizId == quizId));
-            //return await _context.UserResult.Find(entry => entry.UserId == 0 && entry.DomainName == "").FirstOrDefaultAsync();
-            // remove after testing
-        }
-
-        public async Task<IEnumerable<UserResult>> GetAllUserResult()
-        {
-            var x = _context.UserResult.Find(q => q.UserId > 0);
-            return await x.ToListAsync();
-        }
-
-        public HashSet<string> GetAllDistinctDomainUserList(int userId)
-        {
-            var x = _context.UserResult.Find(y => y.UserId == userId).ToList();
-            HashSet<String> domains = new HashSet<string>();
-            foreach (var item in x)
-            {
-                domains.Add(item.DomainName);
-            }
-            return domains;
         }
 
 
@@ -376,5 +338,9 @@ namespace Result.Services
             return newCumulativeTagScores;
         }
 
+
+
     }
 }
+
+
