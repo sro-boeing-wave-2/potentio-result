@@ -17,13 +17,14 @@ namespace Result.Services
         {
             _context = new QuizContext(settings);
         }
-
+        //UserQuizResponse is what u get from QuizEngine
         public async Task<UserQuizResponse> AddQuiz(UserQuizResponse quiz)
         {
             // inserting in userquizresponse, userquizdetail and updating userresult
 
             await _context.UserQuizResponse.InsertOneAsync(quiz);
             UserQuizDetail userQuizDetail = UpdateUserQuizDetail(quiz);
+            //UpdateUserResult updates the database
             UpdateUserResults(userQuizDetail);
             return quiz;
         }
@@ -53,6 +54,7 @@ namespace Result.Services
 
         public HashSet<string> GetAllDistinctDomainUserList(int userId)
         {
+            // x has all the documents of that user from the database
             var x = _context.UserResult.Find(y => y.UserId == userId).ToList();
             HashSet<String> domains = new HashSet<string>();
             foreach (var item in x)
@@ -69,6 +71,7 @@ namespace Result.Services
 
             //Calculate total score of this quiz
             double newTotalScore = calculateTotalScoreOfQuiz(quiz);
+            //calculate  obtained score
             double newObtainedScore = calculateObtainedScoreOfQuiz(quiz);
             double newPercentageScore = ((newObtainedScore * 100) / newTotalScore);
             newPercentageScore = Math.Round(newPercentageScore, 2);
@@ -95,10 +98,12 @@ namespace Result.Services
             //If the entry with unique (user + domain) cannot be found in userResult, create a new entry and insert in the userResult
             if (userResultsEntry == null)
             {
+                //calculate cumulative tag wise score
                 List<QuizResult> quizResults = new List<QuizResult>();
                 quizResults.Add(quizResult);
                 List<CumulativeTagScore> cumulativeTagScores = new List<CumulativeTagScore>();
-                getCumulativeTagWiseResultFirst(quiz, cumulativeTagScores);                     //calculate cumulative tag wise score
+                getCumulativeTagWiseResultFirst(quiz, cumulativeTagScores);                   
+             
                 UserResult userResults = new UserResult()
                 {
                     UserId = userId,
@@ -122,7 +127,7 @@ namespace Result.Services
 
                 double averagePercentage = userResultsEntry.AveragePercentage;
 
-                int numOfEntry = userResultsEntry.QuizResults.Count;
+                int numOfEntry = quizResults.Count;
                 double totalPercentage = numOfEntry * averagePercentage;
                 double updatedTotalPercentage = totalPercentage + newPercentageScore;
                 updatedTotalPercentage = updatedTotalPercentage / (numOfEntry + 1);

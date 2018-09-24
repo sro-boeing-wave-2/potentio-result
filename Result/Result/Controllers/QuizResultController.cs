@@ -90,7 +90,7 @@ namespace Result.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var userResult = _quizResultService.GetAllDistinctDomainUserList(userId);
+            var userResult =  _quizResultService.GetAllDistinctDomainUserList(userId);
 
             if (userResult == null)
             {
@@ -98,6 +98,7 @@ namespace Result.Controllers
             }
             return Ok(userResult);
         }
+                               
         
 
     }
