@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Manager.QuizResultManager;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Result.Data;
 using Result.Models;
@@ -21,7 +22,6 @@ namespace Result.Services
         public async Task<UserQuizResponse> AddQuiz(UserQuizResponse quiz)
         {
             // inserting in userquizresponse, userquizdetail and updating userresult
-
             await _context.UserQuizResponse.InsertOneAsync(quiz);
             UserQuizDetail userQuizDetail = UpdateUserQuizDetail(quiz);
             //UpdateUserResult updates the database
@@ -65,6 +65,7 @@ namespace Result.Services
         }
 
 
+        //logic to calculate some parameters taking from the UserQuizDetail table and putting/updating in the UserResult table
         public async void UpdateUserResults(UserQuizDetail quiz)
         {
             int userId = quiz.UserId;
@@ -78,8 +79,9 @@ namespace Result.Services
             string domainName = quiz.Domain;
             List<QuestionAttempted> questionsList = quiz.QuestionsAttempted;
             List<TagWiseResult> tagWiseResults = new List<TagWiseResult>();
-            getTagWiseResult(quiz, tagWiseResults);                             //calculates the tagwise result for this quiz
 
+            //calculates the tagwise result for this quiz
+            getTagWiseResult(quiz, tagWiseResults);
 
             // Check whether an entry with same User and domain already exists or not
             var userResultsEntry = await _context.UserResult.Find(entryy => entryy.UserId.Equals(userId) && entryy.DomainName.Equals(domainName)).FirstOrDefaultAsync();
@@ -91,8 +93,8 @@ namespace Result.Services
                 ObtainedScore = newObtainedScore,
                 TotalScore = newTotalScore,
                 PercentageScore = newPercentageScore,
-                TagWiseResults = tagWiseResults
-
+                TagWiseResults = tagWiseResults,
+                Date = quiz.Time
             };
 
             //If the entry with unique (user + domain) cannot be found in userResult, create a new entry and insert in the userResult
@@ -122,12 +124,15 @@ namespace Result.Services
                 List<QuizResult> quizResults = userResultsEntry.QuizResults;
                 quizResults.Add(quizResult);
 
-                //List<CumulativeTagScore> cumulativeTagScores = userResultsEntry.TagWiseCumulativeScore;
                 List<CumulativeTagScore> cumulativeTagScores = getCumulativeTagWiseResult(quiz, userResultsEntry);
 
                 double averagePercentage = userResultsEntry.AveragePercentage;
+<<<<<<< HEAD
 
                 int numOfEntry = quizResults.Count;
+=======
+                int numOfEntry = userResultsEntry.QuizResults.Count;
+>>>>>>> 42ff5253791c881b363d874199c9a09bcac79d90
                 double totalPercentage = numOfEntry * averagePercentage;
                 double updatedTotalPercentage = totalPercentage + newPercentageScore;
                 updatedTotalPercentage = updatedTotalPercentage / (numOfEntry + 1);
@@ -139,17 +144,18 @@ namespace Result.Services
                 var update = Builders<UserResult>.Update
                     .Set(x => x.AveragePercentage, updatedTotalPercentage)
                     .Set(x => x.QuizResults, quizResults)
-                    .Set(x => x.TagWiseCumulativeScore,cumulativeTagScores);
+                    .Set(x => x.TagWiseCumulativeScore, cumulativeTagScores);
                 var result = await _context.UserResult.UpdateOneAsync(filter, update);
             }
         }
 
 
+        //Calculating the score OBTAINED from the response given by the QuizEngine 
         public double calculateObtainedScoreOfQuiz(UserQuizDetail quizDetail)
         {
             List<QuestionAttempted> questionAttemptedList = quizDetail.QuestionsAttempted;
             double score = 0;
-            double multiplyFactor = 1;
+            double multiplyFactor = 1;          //can change the multiply factor if needed
             foreach (QuestionAttempted quest in questionAttemptedList)
             {
                 if (quest.IsCorrect) score += quest.DifficultyLevel * multiplyFactor;
@@ -157,6 +163,7 @@ namespace Result.Services
             return score;
         }
 
+        //Calculating the TOTAL score obtained from the response given by the QuizEngine 
         public double calculateTotalScoreOfQuiz(UserQuizDetail quizDetail)
         {
             List<QuestionAttempted> questionAttemptedList = quizDetail.QuestionsAttempted;
@@ -170,12 +177,7 @@ namespace Result.Services
         }
 
 
-
-        public void calculateTagWiseResult(UserQuizDetail quizDetail)
-        {
-            List<QuestionAttempted> questionAttemptedList = quizDetail.QuestionsAttempted;
-        }
-
+        //Get tag wise result of the given quiz and save it in UserResult Table
         public void getTagWiseResult(UserQuizDetail quiz, List<TagWiseResult> tagWiseResult)
         {
             List<QuestionAttempted> questions = quiz.QuestionsAttempted;
@@ -225,15 +227,18 @@ namespace Result.Services
         }
 
 
+        //Update UserQuizDetail table from the UserQuizResponse to use it in UserResult table. This is to make the code less coupled
+        //so that even if the parameters of the UserQuizDetail has changed, we need not have to change everything.
         public UserQuizDetail UpdateUserQuizDetail(UserQuizResponse userQuizResponse)
         {
             UserQuizDetail userQuizDetail = new UserQuizDetail();
             List<QuestionAttempted> questionsAttempted = new List<QuestionAttempted>();
 
-
             string quizId = userQuizResponse.QuizId;
             int userId = userQuizResponse.UserId;
             string domainName = userQuizResponse.DomainName;
+            DateTime time = DateTime.Now;
+
             List<Question> questionsList = userQuizResponse.QuestionsAttempted;
 
             int questionCount = 1;
@@ -274,7 +279,7 @@ namespace Result.Services
             userQuizDetail.QuizId = quizId;
             userQuizDetail.UserId = userId;
             userQuizDetail.Domain = domainName;
-            userQuizDetail.Time = new DateTime();
+            userQuizDetail.Time = time;
             userQuizDetail.QuestionsAttempted = questionsAttempted;
 
             _context.UserQuizDetail.InsertOne(userQuizDetail);
@@ -283,6 +288,7 @@ namespace Result.Services
         }
 
 
+        //for the first time, calculate the cumultaive tag wise result for that user-domain test.
         public void getCumulativeTagWiseResultFirst(UserQuizDetail quiz, List<CumulativeTagScore> cumulativeTagScore)
         {
             List<QuestionAttempted> questions = quiz.QuestionsAttempted;
@@ -324,9 +330,11 @@ namespace Result.Services
 
 
 
+        // for not-the-first-time-user calculate the cumulative tag result -
+        // or you may say update the current knowledge status of the user
+        // unique for user-domain
         public List<CumulativeTagScore> getCumulativeTagWiseResult(UserQuizDetail quiz, UserResult userResult)
         {
-
             List<QuestionAttempted> questions = quiz.QuestionsAttempted;
             HashSet<string> labels = new HashSet<string>();
             Dictionary<string, int> totalTagCount = new Dictionary<string, int>();
@@ -377,10 +385,9 @@ namespace Result.Services
                 score.TagRating = newTagRating;
                 newCumulativeTagScores.Add(score);
             }
-            
+
             return newCumulativeTagScores;
         }
+
     }
-
-
 }
