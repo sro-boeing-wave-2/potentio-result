@@ -31,6 +31,8 @@ namespace Result.Models
       
         public string QuizId { get; set; }
 
+        public DateTime Date { get; set; }
+
         public List<QuestionAttempted> QuestionsAttempted { get; set; }
 
         public double ObtainedScore { get; set; }

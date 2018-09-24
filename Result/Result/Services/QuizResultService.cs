@@ -90,7 +90,8 @@ namespace Result.Services
                 ObtainedScore = newObtainedScore,
                 TotalScore = newTotalScore,
                 PercentageScore = newPercentageScore,
-                TagWiseResults = tagWiseResults
+                TagWiseResults = tagWiseResults,
+                Date = quiz.Time
             };
 
             //If the entry with unique (user + domain) cannot be found in userResult, create a new entry and insert in the userResult
@@ -226,6 +227,8 @@ namespace Result.Services
             string quizId = userQuizResponse.QuizId;
             int userId = userQuizResponse.UserId;
             string domainName = userQuizResponse.DomainName;
+            DateTime time = DateTime.Now;
+
             List<Question> questionsList = userQuizResponse.QuestionsAttempted;
 
             int questionCount = 1;
@@ -266,7 +269,7 @@ namespace Result.Services
             userQuizDetail.QuizId = quizId;
             userQuizDetail.UserId = userId;
             userQuizDetail.Domain = domainName;
-            userQuizDetail.Time = new DateTime();
+            userQuizDetail.Time = time;
             userQuizDetail.QuestionsAttempted = questionsAttempted;
 
             _context.UserQuizDetail.InsertOne(userQuizDetail);
