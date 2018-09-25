@@ -36,6 +36,8 @@ namespace Result.Models
 
         public string Domain { get; set; }
 
+        public string Taxonomy { get; set; }
+
         public string[] ConceptTags { get; set; }
 
         public int DifficultyLevel { get; set; }

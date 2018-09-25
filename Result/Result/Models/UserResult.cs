@@ -55,6 +55,8 @@ namespace Result.Models
         public double TagCorrectPercentage { get; set; }
 
         public double TagRating { get; set; }
+
+        public string TaxonomyLevel { get; set; }
     }
 
     public class CumulativeTagScore

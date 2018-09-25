@@ -255,6 +255,7 @@ namespace Result.Services
                 string userResponse = item.userResponse;
                 string correctOption = item.CorrectOption;
                 Boolean isCorrect = item.IsCorrect;
+                string taxonomy = item.Taxonomy;
 
                 QuestionAttempted question = new QuestionAttempted();
                 question.QuestionId = questionId;
@@ -272,7 +273,7 @@ namespace Result.Services
                 question.Response = userResponse;
                 question.CorrectAns = correctOption;
                 question.IsCorrect = isCorrect;
-
+                question.Taxonomy = taxonomy;
                 questionsAttempted.Add(question);
             }
 
