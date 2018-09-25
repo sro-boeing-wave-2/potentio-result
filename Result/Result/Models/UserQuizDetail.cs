@@ -30,6 +30,8 @@ namespace Result.Models
       
         public string QuestionText { get; set; }
 
+         public string Raw { get; set; }
+
         public int DifficultyLevel { get; set; }
 
         public string Taxonomy { get; set; }

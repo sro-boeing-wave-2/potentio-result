@@ -20,7 +20,7 @@ namespace Result.Models
 
         public List<Question> QuestionsAttempted { get; set; }
 
-        public List<Question> QuestionBank { get; set; }
+        public List<Object> QuestionBank { get; set; }
     }
 
     public class Question
@@ -30,11 +30,15 @@ namespace Result.Models
 
         public string QuestionText { get; set; }
 
-        public List<Options> OptionList { get; set; }
+        public string Raw { get; set; }
+
+        public List<Options> Options { get; set; }
 
         public string QuestionType { get; set; }
 
         public string Domain { get; set; }
+
+        public string Title { get; set; }
 
         public string Taxonomy { get; set; }
 
@@ -42,15 +46,16 @@ namespace Result.Models
 
         public int DifficultyLevel { get; set; }
 
-        public string userResponse { get; set; }
+        public string Response { get; set; }
 
         public bool IsCorrect { get; set; }
 
-        public string CorrectOption { get; set; }
+        public Options CorrectAnswer { get; set; }
     }
 
     public class Options
     {
-        public string Option { get; set; }
+        public string Raw { get; set; }
+        public string OptionText { get; set; }
     }
 }

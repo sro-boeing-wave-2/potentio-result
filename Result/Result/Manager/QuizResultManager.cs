@@ -180,61 +180,66 @@ namespace Manager.QuizResultManager
 
         //Update UserQuizDetail table from the UserQuizResponse to use it in UserResult table. This is to make the code less coupled
         //so that even if the parameters of the UserQuizDetail has changed, we need not have to change everything.
-        public UserQuizDetail UpdateUserQuizDetail(UserQuizResponse userQuizResponse)
-        {
-            UserQuizDetail userQuizDetail = new UserQuizDetail();
-            List<QuestionAttempted> questionsAttempted = new List<QuestionAttempted>();
+        //public UserQuizDetail UpdateUserQuizDetail(UserQuizResponse userQuizResponse)
+        //{
+        //    UserQuizDetail userQuizDetail = new UserQuizDetail();
+        //    List<QuestionAttempted> questionsAttempted = new List<QuestionAttempted>();
 
-            string quizId = userQuizResponse.QuizId;
-            int userId = userQuizResponse.UserId;
-            string domainName = userQuizResponse.DomainName;
-            List<Question> questionsList = userQuizResponse.QuestionsAttempted;
+        //    string quizId = userQuizResponse.QuizId;
+        //    int userId = userQuizResponse.UserId;
+        //    string domainName = userQuizResponse.DomainName;
+        //    DateTime time = DateTime.Now;
 
-            int questionCount = 1;
+        //    List<Object> questionsList = userQuizResponse.QuestionsAttempted;
 
-            foreach (var item in questionsList)
-            {
-                string questionId = item.QuestionId;
-                string questionText = item.QuestionText;
-                List<Result.Models.Options> options = item.OptionList;
-                string questionType = item.QuestionType;
-                string domain = item.Domain;
-                string[] conceptTags = item.ConceptTags;
-                int difficultyLevel = item.DifficultyLevel;
-                string userResponse = item.userResponse;
-                string correctOption = item.CorrectOption;
-                Boolean isCorrect = item.IsCorrect;
+        //    int questionCount = 1;
 
-                QuestionAttempted question = new QuestionAttempted();
-                question.QuestionId = questionId;
-                question.QuestionText = questionText;
-                question.QuestionNumber = questionCount++;
-                List<string> optionList = new List<string>();
-                foreach (var option in options)
-                {
-                    optionList.Add(option.Option);
-                }
-                question.Options = optionList;
-                question.QuestionType = questionType;
-                question.ConceptTags = conceptTags;
-                question.DifficultyLevel = difficultyLevel;
-                question.Response = userResponse;
-                question.CorrectAns = correctOption;
-                question.IsCorrect = isCorrect;
+        //    foreach (var x in questionsList)
+        //    {
+        //        Question item = x as Question;
+        //        string questionId = item.QuestionId;
+        //        string questionText = item.QuestionText;
+        //        List<Result.Models.Options> options = item.Options;
+        //        string questionType = item.QuestionType;
+        //        string domain = item.Domain;
+        //        string[] conceptTags = item.ConceptTags;
+        //        int difficultyLevel = item.DifficultyLevel;
+        //        string userResponse = item.userResponse;
+        //        string correctOption = item.CorrectOption;
+        //        Boolean isCorrect = item.IsCorrect;
+        //        string taxonomy = item.Taxonomy;
 
-                questionsAttempted.Add(question);
-            }
+        //        QuestionAttempted question = new QuestionAttempted();
+        //        question.QuestionId = questionId;
+        //        question.QuestionText = questionText;
+        //        question.QuestionNumber = questionCount++;
+        //        List<string> optionList = new List<string>();
+        //        foreach (var option in options)
+        //        {
+        //            optionList.Add(option.Raw);
+        //        }
+        //        question.Options = optionList;
+        //        question.QuestionType = questionType;
+        //        question.ConceptTags = conceptTags;
+        //        question.DifficultyLevel = difficultyLevel;
+        //        question.Response = userResponse;
+        //        question.CorrectAns = correctOption;
+        //        question.IsCorrect = isCorrect;
+        //        question.Taxonomy = taxonomy;
+        //        questionsAttempted.Add(question);
+        //    }
 
-            userQuizDetail.QuizId = quizId;
-            userQuizDetail.UserId = userId;
-            userQuizDetail.Domain = domainName;
-            userQuizDetail.Time = new DateTime();
-            userQuizDetail.QuestionsAttempted = questionsAttempted;
+        //    userQuizDetail.QuizId = quizId;
+        //    userQuizDetail.UserId = userId;
+        //    userQuizDetail.Domain = domainName;
+        //    userQuizDetail.Time = time;
+        //    userQuizDetail.QuestionsAttempted = questionsAttempted;
 
-            _context.UserQuizDetail.InsertOne(userQuizDetail);
+        //    _context.UserQuizDetail.InsertOne(userQuizDetail);
 
-            return userQuizDetail;
-        }
+        //    return userQuizDetail;
+        //}
+
 
 
         //for the first time, calculate the cumultaive tag wise result for that user-domain test.

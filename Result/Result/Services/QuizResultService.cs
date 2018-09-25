@@ -245,15 +245,17 @@ namespace Result.Services
 
             foreach (var item in questionsList)
             {
+              //  Question item = x as Question;
                 string questionId = item.QuestionId;
                 string questionText = item.QuestionText;
-                List<Result.Models.Options> options = item.OptionList;
+                List<Result.Models.Options> options = item.Options;
                 string questionType = item.QuestionType;
                 string domain = item.Domain;
                 string[] conceptTags = item.ConceptTags;
                 int difficultyLevel = item.DifficultyLevel;
-                string userResponse = item.userResponse;
-                string correctOption = item.CorrectOption;
+                string userResponse = item.Response;
+                string raw = item.Raw;
+                string correctOption = item.CorrectAnswer.Raw;
                 Boolean isCorrect = item.IsCorrect;
                 string taxonomy = item.Taxonomy;
 
@@ -264,7 +266,7 @@ namespace Result.Services
                 List<string> optionList = new List<string>();
                 foreach (var option in options)
                 {
-                    optionList.Add(option.Option);
+                    optionList.Add(option.Raw);
                 }
                 question.Options = optionList;
                 question.QuestionType = questionType;
@@ -274,6 +276,7 @@ namespace Result.Services
                 question.CorrectAns = correctOption;
                 question.IsCorrect = isCorrect;
                 question.Taxonomy = taxonomy;
+                question.Raw = raw;
                 questionsAttempted.Add(question);
             }
 
