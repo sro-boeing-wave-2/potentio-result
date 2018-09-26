@@ -48,7 +48,7 @@ namespace Result.Models
 
         public string Response { get; set; }
 
-        public bool IsCorrect { get; set; }
+       // public bool IsCorrect { get; set; }
 
         public Options CorrectAnswer { get; set; }
     }

@@ -222,10 +222,32 @@ namespace Result.Services
                 tag.TagCorrectAnsCount = correctTagCount[item];
                 tag.TagCorrectPercentage = tagCorrectPercentage;
                 tag.TagRating = tagRatingList[item];
+                tag.TaxonomyLevel = getTaxonomyLevel(item, questions);
                 tagWiseResult.Add(tag);
             }
         }
 
+        public string getTaxonomyLevel(string concept, List<QuestionAttempted> questions)
+        {
+            string[] taxonomyLevels = { "Evaluation", "Synthesis", "Analysis", "Application", "Comprehension","Knowledge" };
+            foreach (string taxLevel in taxonomyLevels){
+                int trueCount = 0;
+                int falseCount = 0;
+                foreach(QuestionAttempted question in questions){
+                    if (question.ConceptTags.Contains(concept) && question.Taxonomy == taxLevel)
+                    {
+                        if (question.IsCorrect) trueCount++;
+                        else falseCount++;
+                    }
+                }
+
+                if (trueCount!=0 && trueCount >= falseCount)
+                {
+                    return taxLevel;
+                }
+            }
+            return "NA";
+        }
 
         //Update UserQuizDetail table from the UserQuizResponse to use it in UserResult table. This is to make the code less coupled
         //so that even if the parameters of the UserQuizDetail has changed, we need not have to change everything.
@@ -256,7 +278,10 @@ namespace Result.Services
                 string userResponse = item.Response;
                 string raw = item.Raw;
                 string correctOption = item.CorrectAnswer.Raw;
-                Boolean isCorrect = item.IsCorrect;
+
+
+
+                Boolean isCorrect = (userResponse==correctOption);
                 string taxonomy = item.Taxonomy;
 
                 QuestionAttempted question = new QuestionAttempted();
