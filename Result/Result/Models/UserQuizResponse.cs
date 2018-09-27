@@ -46,7 +46,7 @@ namespace Result.Models
 
         public int DifficultyLevel { get; set; }
 
-        public string Response { get; set; }
+        public Options Response { get; set; }
 
        // public bool IsCorrect { get; set; }
 

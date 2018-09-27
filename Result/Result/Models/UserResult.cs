@@ -57,6 +57,8 @@ namespace Result.Models
         public double TagRating { get; set; }
 
         public string TaxonomyLevel { get; set; }
+
+        public double TaxonomyScore { get; set; }
     }
 
     public class CumulativeTagScore
@@ -64,6 +66,10 @@ namespace Result.Models
         public string TagName { get; set; }
 
         public double TagRating { get; set; }
+
+        public string TaxonomyLevelReached { get; set; }
+
+        public double TaxonomyScore { get; set; }
     }
 }
 

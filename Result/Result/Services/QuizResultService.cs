@@ -186,6 +186,8 @@ namespace Result.Services
             Dictionary<string, int> correctTagCount = new Dictionary<string, int>();
             Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
+            Dictionary<string, double> taxonomyTotalScore = new Dictionary<string, double>();
+            string[] taxonomyLevels = {"Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create" };
 
             foreach (var item in questions)
             {
@@ -197,6 +199,7 @@ namespace Result.Services
                 totalTagCount.Add(item, 0);
                 correctTagCount.Add(item, 0);
                 tagRatingList.Add(item, 0);
+                taxonomyTotalScore.Add(item, 0);
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
@@ -206,6 +209,7 @@ namespace Result.Services
                         {
                             correctTagCount[item] += 1;
                             tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
+                            taxonomyTotalScore[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
                         }
                     }
                 }
@@ -223,13 +227,15 @@ namespace Result.Services
                 tag.TagCorrectPercentage = tagCorrectPercentage;
                 tag.TagRating = tagRatingList[item];
                 tag.TaxonomyLevel = getTaxonomyLevel(item, questions);
+                tag.TaxonomyScore = taxonomyTotalScore[item];
                 tagWiseResult.Add(tag);
             }
         }
 
         public string getTaxonomyLevel(string concept, List<QuestionAttempted> questions)
         {
-            string[] taxonomyLevels = { "Evaluation", "Synthesis", "Analysis", "Application", "Comprehension","Knowledge" };
+            //dont change the order of this, cause this is how it is.
+            string[] taxonomyLevels = { "Create", "Evaluate", "Analyze", "Apply", "Understand", "Remember" };
             foreach (string taxLevel in taxonomyLevels){
                 int trueCount = 0;
                 int falseCount = 0;
@@ -248,6 +254,7 @@ namespace Result.Services
             }
             return "NA";
         }
+
 
         //Update UserQuizDetail table from the UserQuizResponse to use it in UserResult table. This is to make the code less coupled
         //so that even if the parameters of the UserQuizDetail has changed, we need not have to change everything.
@@ -275,12 +282,11 @@ namespace Result.Services
                 string domain = item.Domain;
                 string[] conceptTags = item.ConceptTags;
                 int difficultyLevel = item.DifficultyLevel;
-                string userResponse = item.Response;
+                string userResponse = item.Response.Raw;
                 string raw = item.Raw;
                 string correctOption = item.CorrectAnswer.Raw;
 
-
-
+                
                 Boolean isCorrect = (userResponse==correctOption);
                 string taxonomy = item.Taxonomy;
 
@@ -326,17 +332,19 @@ namespace Result.Services
             Dictionary<string, int> correctTagCount = new Dictionary<string, int>();
             Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
+            Dictionary<string, double> taxScoreCumulative = new Dictionary<string, double>();
+            string[] taxonomyLevels = { "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"};
 
             foreach (var item in questions)
             {
                 labels.UnionWith(new HashSet<string>(item.ConceptTags));
-
             }
 
             foreach (var item in labels)
             {
                 totalTagCount.Add(item, 0);
                 tagRatingList.Add(item, 0);
+                taxScoreCumulative.Add(item, 0);
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
@@ -345,6 +353,7 @@ namespace Result.Services
                         if (question.IsCorrect)
                         {
                             tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
+                            taxScoreCumulative[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
                         }
                     }
                 }
@@ -353,6 +362,8 @@ namespace Result.Services
                 CumulativeTagScore tag = new CumulativeTagScore();
                 tag.TagName = item;
                 tag.TagRating = tagRatingList[item];
+                tag.TaxonomyLevelReached = getTaxonomyLevel(item,questions);
+                tag.TaxonomyScore = taxScoreCumulative[item];
                 cumulativeTagScore.Add(tag);
             }
         }
@@ -370,6 +381,8 @@ namespace Result.Services
             Dictionary<string, int> correctTagCount = new Dictionary<string, int>();
             Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
+            Dictionary<string, double> taxScoreCumulative = new Dictionary<string, double>();
+            string[] taxonomyLevels = { "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create" };
 
             foreach (var item in questions)
             {
@@ -381,6 +394,7 @@ namespace Result.Services
             {
                 totalTagCount.Add(item, 0);
                 tagRatingList.Add(item, 0);
+                taxScoreCumulative.Add(item, 0);
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
@@ -389,6 +403,7 @@ namespace Result.Services
                         if (question.IsCorrect)
                         {
                             tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
+                            taxScoreCumulative[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
                         }
                     }
                 }
@@ -405,6 +420,11 @@ namespace Result.Services
                 CumulativeTagScore score = new CumulativeTagScore();
                 string tagName = item.TagName;
                 double tagRating = item.TagRating;
+                string taxLevelOld = item.TaxonomyLevelReached;
+                string taxLevelNew = getTaxonomyLevel(tagName, questions);
+
+                double taxScoreOld = item.TaxonomyScore;
+                double taxScoreNew = taxScoreCumulative[item.TagName]+taxScoreOld;
 
                 double oldTotalTemp = tagRating * numOfQuiz;
                 double newTotalTemp = oldTotalTemp + tagRatingList[tagName];
@@ -412,10 +432,19 @@ namespace Result.Services
                 newTagRating = Math.Round(newTagRating, 2);
                 score.TagName = tagName;
                 score.TagRating = newTagRating;
+                score.TaxonomyLevelReached = getHigerTaxonomyLevel(taxLevelOld,taxLevelNew);
+                score.TaxonomyScore = taxScoreNew;
                 newCumulativeTagScores.Add(score);
             }
 
             return newCumulativeTagScores;
+        }
+
+        public static string getHigerTaxonomyLevel(string tax1, string tax2)
+        {
+            string[] taxonomyLevels = { "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create" };
+
+            return Array.IndexOf(taxonomyLevels, tax1) > Array.IndexOf(taxonomyLevels, tax2) ? tax1 : tax2;
         }
 
     }
