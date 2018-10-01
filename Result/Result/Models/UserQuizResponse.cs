@@ -18,7 +18,7 @@ namespace Result.Models
         
         public int CurrentQuestionIndex { get; set; }
 
-        public List<Question> QuestionsAttempted { get; set; }
+        public List<Object> QuestionsAttempted { get; set; }
 
         public List<Object> QuestionBank { get; set; }
     }

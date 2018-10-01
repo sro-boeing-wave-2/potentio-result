@@ -38,11 +38,15 @@ namespace Result.Models
 
         public string Response { get; set; }
 
+        public List<Options> ResponseList { get; set; }
+
         public bool IsCorrect { get; set; }
 
         public string[] ConceptTags { get; set; }
 
         public string CorrectAns { get; set; }
+
+        public List<Options> CorrectAnsList { get; set; }
 
         public List<string> Options { get; set; }
 

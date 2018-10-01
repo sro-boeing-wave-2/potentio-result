@@ -1,11 +1,14 @@
 ﻿using Manager.QuizResultManager;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Result.Data;
 using Result.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Result.Services
@@ -262,53 +265,136 @@ namespace Result.Services
         {
             UserQuizDetail userQuizDetail = new UserQuizDetail();
             List<QuestionAttempted> questionsAttempted = new List<QuestionAttempted>();
+           
 
             string quizId = userQuizResponse.QuizId;
             int userId = userQuizResponse.UserId;
             string domainName = userQuizResponse.DomainName;
             DateTime time = DateTime.Now;
 
-            List<Question> questionsList = userQuizResponse.QuestionsAttempted;
+            List<Object> questionsList = userQuizResponse.QuestionsAttempted;
+
+            Console.WriteLine(questionsList.Count+ "COUNT");
 
             int questionCount = 1;
 
             foreach (var item in questionsList)
             {
-              //  Question item = x as Question;
-                string questionId = item.QuestionId;
-                string questionText = item.QuestionText;
-                List<Result.Models.Options> options = item.Options;
-                string questionType = item.QuestionType;
-                string domain = item.Domain;
-                string[] conceptTags = item.ConceptTags;
-                int difficultyLevel = item.DifficultyLevel;
-                string userResponse = item.Response.Raw;
-                string raw = item.Raw;
-                string correctOption = item.CorrectAnswer.Raw;
+                QuestionAttempted question = new QuestionAttempted();
+                try
+                {
+                    //  Question item = x as Question;
+                    Object x = item;
+                    JObject Parseddetail = JObject.Parse(JsonConvert.SerializeObject(x));
+                    string questionType = Parseddetail.GetValue("questionType").ToString();
+                    Console.WriteLine("THIS IS THE TYP" + questionType);
+                    System.Reflection.Assembly b = System.Reflection.Assembly.Load("Potentiometer.Core");
+                    Type QuestionType = b.GetType("Potentiometer.Core.QuestionTypes." + questionType);
+                    object instanceObjectOfQuestion = Activator.CreateInstance(QuestionType);
+                    JsonConvert.PopulateObject(JsonConvert.SerializeObject(x), instanceObjectOfQuestion);
+                    Console.WriteLine("THIS IS THE POPILATED QUESTION " + JsonConvert.SerializeObject(x));
+                    string questionId = Parseddetail.GetValue("questionId").ToString();
+                    Console.WriteLine("THIS IS THE QUESTION ID " + questionId);
+
+                    string questionText = Parseddetail.GetValue("questionText").ToString();
+                    List<Result.Models.Options> options = JsonConvert.DeserializeObject<List<Result.Models.Options>>(Parseddetail.GetValue("options").ToString()); // Parseddetail.GetValue("options").ToString() ;
+                    
+                    string conceptTagsString =   Parseddetail.GetValue("conceptTags").ToString() ;
+                    int difficultyLevel = Convert.ToInt32(Parseddetail.GetValue("difficultyLevel").ToString());
+                    //string userResponse = Parseddetail.GetValue("userResponse").ToString();
+                    string raw = Parseddetail.GetValue("raw").ToString();
+                   // string correctOption = Parseddetail.GetValue("correctOption").ToString();
+                    string taxonomy = Parseddetail.GetValue("taxonomy").ToString();
+                    
+                    Console.WriteLine(conceptTagsString.Substring(1, conceptTagsString.Length -2 ).Split(','));
+                    string[] arr = conceptTagsString.Substring(1, conceptTagsString.Length - 2).Split(',');
+
+                    string[] conceptTags = new string[arr.Length];
+                    int index = 0;
+                    foreach (string s in arr)
+                    {
+                        string replacement = Regex.Replace(s, @"\t|\n|\r", "");
+                        replacement = replacement.Replace('"', ' ').Trim();
+                        conceptTags[index] = replacement;
+                        index++;
+                    
+                    }
+                    Console.WriteLine("---");
+                    
+                    question.QuestionId = questionId;
+                    question.QuestionText = questionText;
+                    question.QuestionNumber = questionCount++;
+                    question.Raw = raw;
+                    question.DifficultyLevel = difficultyLevel;
+                    question.Taxonomy = taxonomy;
+                    question.ConceptTags = conceptTags;
+                    question.QuestionType = questionType;
+
+                    List<string> optionList = new List<string>();
+                    foreach (var option in options)
+                    {
+                        optionList.Add(option.Raw);
+                    }
+                    question.Options = optionList;
+
+                    if(questionType == "MCQ")
+                    {
+                        string resp = JsonConvert.DeserializeObject<Result.Models.Options>(Parseddetail.GetValue("response").ToString()).Raw;
+                        string ans = JsonConvert.DeserializeObject<Result.Models.Options>(Parseddetail.GetValue("correctAnswer").ToString()).Raw;
+
+                        Console.WriteLine(resp + " " + resp.Length);
+                        Console.WriteLine(ans + " "+ ans.Length );
+                        question.IsCorrect = (resp == ans);
+                        Console.WriteLine(question.IsCorrect);
+                        question.Response = resp;
+                        question.CorrectAns = ans;
+                    }
+                    else
+                    {
+                        List<Result.Models.Options> resp = JsonConvert.DeserializeObject<List<Result.Models.Options>>(Parseddetail.GetValue("response").ToString());
+                        List <Result.Models.Options> ans = JsonConvert.DeserializeObject<List<Result.Models.Options>>(Parseddetail.GetValue("correctAnswer").ToString());
+
+                        HashSet<string> h = new HashSet<string>();
+                        HashSet<string> h1 = new HashSet<string>();
+                        
+                        foreach (var itemm in resp)
+                        {
+                            h.Add(itemm.Raw);
+                        }
+                        foreach (var item1 in ans)
+                        {
+                            h1.Add(item1.Raw);
+                        }
+                        question.IsCorrect = h.SetEquals(h1) && h.Count==h1.Count;
+                        question.ResponseList = resp;
+                        question.CorrectAnsList = ans;
+                    }
+                    questionsAttempted.Add(question);
+                    
+                }
+                catch(Exception e) {
+                    Console.WriteLine("exception occured -------- "+e);
+                }
+        
+
+                //string questionId = item.QuestionId;
+                //string questionText = item.QuestionText;
+                //List<Result.Models.Options> options = item.Options;
+                //string questionType = item.QuestionType;
+                //string domain = item.Domain;
+                //string[] conceptTags = item.ConceptTags;
+                //int difficultyLevel = item.DifficultyLevel;
+                //string userResponse = item.Response.Raw;
+                //string raw = item.Raw;
+                //string correctOption = item.CorrectAnswer.Raw;
 
                 
-                Boolean isCorrect = (userResponse==correctOption);
-                string taxonomy = item.Taxonomy;
+                //Boolean isCorrect = (userResponse==correctOption);
+                //string taxonomy = item.Taxonomy;
 
-                QuestionAttempted question = new QuestionAttempted();
-                question.QuestionId = questionId;
-                question.QuestionText = questionText;
-                question.QuestionNumber = questionCount++;
-                List<string> optionList = new List<string>();
-                foreach (var option in options)
-                {
-                    optionList.Add(option.Raw);
-                }
-                question.Options = optionList;
-                question.QuestionType = questionType;
-                question.ConceptTags = conceptTags;
-                question.DifficultyLevel = difficultyLevel;
-                question.Response = userResponse;
-                question.CorrectAns = correctOption;
-                question.IsCorrect = isCorrect;
-                question.Taxonomy = taxonomy;
-                question.Raw = raw;
-                questionsAttempted.Add(question);
+                
+                
+                
             }
 
             userQuizDetail.QuizId = quizId;
