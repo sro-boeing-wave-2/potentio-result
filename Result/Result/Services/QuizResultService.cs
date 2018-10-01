@@ -504,38 +504,67 @@ namespace Result.Services
 
             HashSet<string> oldTag = new HashSet<string>();
 
+
             foreach (var old in cumulativeTagScores)
             {
                 oldTag.Add(old.TagName);
             }
+
+            HashSet<string> h = new HashSet<string>(labels);
+            HashSet<string> h1 = new HashSet<string>(oldTag);
             
-            labels.ExceptWith(oldTag);
+            Console.WriteLine("================");
+            Console.WriteLine(String.Join(",", h1));
+            Console.WriteLine(String.Join(",", h));
+            Console.WriteLine("================");
+
+            h.ExceptWith(oldTag);
+            h1.ExceptWith(labels);
+
+            Console.WriteLine(String.Join(",", labels));
+
+            Console.WriteLine("================");
+            Console.WriteLine(String.Join(",", h1));
+            Console.WriteLine(String.Join(",", h));
+            Console.WriteLine("================");
 
             foreach (var item in cumulativeTagScores)
             {
-                CumulativeTagScore score = new CumulativeTagScore();
-                string tagName = item.TagName;
-                double tagRating = item.TagRating;
-                string taxLevelOld = item.TaxonomyLevelReached;
-                string taxLevelNew = getTaxonomyLevel(tagName, questions);
+                if (!h1.Contains(item.TagName))
+                {
+                    CumulativeTagScore score = new CumulativeTagScore();
+                    string tagName = item.TagName;
+                    double tagRating = item.TagRating;
+                    string taxLevelOld = item.TaxonomyLevelReached;
+                    string taxLevelNew = getTaxonomyLevel(tagName, questions);
 
-                double taxScoreOld = item.TaxonomyScore;
+                    double taxScoreOld = item.TaxonomyScore;
 
 
-                double taxScoreNew = taxScoreCumulative[item.TagName]+taxScoreOld;
+                    double taxScoreNew = taxScoreCumulative[item.TagName] + taxScoreOld;
 
-                double oldTotalTemp = tagRating * numOfQuiz;
-                double newTotalTemp = oldTotalTemp + tagRatingList[tagName];
-                double newTagRating = newTotalTemp / (numOfQuiz + 1);
-                newTagRating = Math.Round(newTagRating, 2);
-                score.TagName = tagName;
-                score.TagRating = newTagRating;
-                score.TaxonomyLevelReached = getHigerTaxonomyLevel(taxLevelOld,taxLevelNew);
-                score.TaxonomyScore = taxScoreNew;
-                newCumulativeTagScores.Add(score);
+                    double oldTotalTemp = tagRating * numOfQuiz;
+                    double newTotalTemp = oldTotalTemp + tagRatingList[tagName];
+                    double newTagRating = newTotalTemp / (numOfQuiz + 1);
+                    newTagRating = Math.Round(newTagRating, 2);
+                    score.TagName = tagName;
+                    score.TagRating = newTagRating;
+                    score.TaxonomyLevelReached = getHigerTaxonomyLevel(taxLevelOld, taxLevelNew);
+                    score.TaxonomyScore = taxScoreNew;
+                    newCumulativeTagScores.Add(score);
+                }
+                else
+                {
+                    CumulativeTagScore score = new CumulativeTagScore();
+                    score.TagName = item.TagName;
+                    score.TagRating = item.TagRating;
+                    score.TaxonomyLevelReached = item.TaxonomyLevelReached;
+                    score.TaxonomyScore = item.TaxonomyScore;
+                    newCumulativeTagScores.Add(score);
+                }
             }
 
-            foreach (var item in labels)
+            foreach (var item in h)
             {
                 CumulativeTagScore score = new CumulativeTagScore();
                 score.TagName = item;
