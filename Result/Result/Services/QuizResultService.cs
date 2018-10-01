@@ -501,6 +501,16 @@ namespace Result.Services
             int numOfQuiz = userResult.QuizResults.Count;
             List<CumulativeTagScore> cumulativeTagScores = userResult.TagWiseCumulativeScore;
 
+
+            HashSet<string> oldTag = new HashSet<string>();
+
+            foreach (var old in cumulativeTagScores)
+            {
+                oldTag.Add(old.TagName);
+            }
+            
+            labels.ExceptWith(oldTag);
+
             foreach (var item in cumulativeTagScores)
             {
                 CumulativeTagScore score = new CumulativeTagScore();
@@ -510,6 +520,8 @@ namespace Result.Services
                 string taxLevelNew = getTaxonomyLevel(tagName, questions);
 
                 double taxScoreOld = item.TaxonomyScore;
+
+
                 double taxScoreNew = taxScoreCumulative[item.TagName]+taxScoreOld;
 
                 double oldTotalTemp = tagRating * numOfQuiz;
@@ -520,6 +532,16 @@ namespace Result.Services
                 score.TagRating = newTagRating;
                 score.TaxonomyLevelReached = getHigerTaxonomyLevel(taxLevelOld,taxLevelNew);
                 score.TaxonomyScore = taxScoreNew;
+                newCumulativeTagScores.Add(score);
+            }
+
+            foreach (var item in labels)
+            {
+                CumulativeTagScore score = new CumulativeTagScore();
+                score.TagName = item;
+                score.TagRating = tagRatingList[item];
+                score.TaxonomyLevelReached = getTaxonomyLevel(item, questions);
+                score.TaxonomyScore = taxScoreCumulative[item];
                 newCumulativeTagScores.Add(score);
             }
 
