@@ -190,6 +190,9 @@ namespace Result.Services
             Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
             Dictionary<string, double> taxonomyTotalScore = new Dictionary<string, double>();
+            Dictionary<string, double> totalDenCount = new Dictionary<string, double>();
+
+
             string[] taxonomyLevels = {"Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create" };
 
             foreach (var item in questions)
@@ -203,11 +206,13 @@ namespace Result.Services
                 correctTagCount.Add(item, 0);
                 tagRatingList.Add(item, 0);
                 taxonomyTotalScore.Add(item, 0);
+                totalDenCount.Add(item, 0);
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
                     {
                         totalTagCount[item] += 1;
+                        totalDenCount[item] += 1/(float)(question.ConceptTags.Length);
                         if (question.IsCorrect)
                         {
                             correctTagCount[item] += 1;
@@ -217,7 +222,7 @@ namespace Result.Services
                     }
                 }
 
-                tagRatingList[item] /= totalTagCount[item];
+                tagRatingList[item] /= totalDenCount[item];
                 tagRatingList[item] = Math.Round(tagRatingList[item], 2);
 
                 double tagCorrectPercentage = ((double)correctTagCount[item] / (double)totalTagCount[item]) * 100;
@@ -419,6 +424,7 @@ namespace Result.Services
             Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
             Dictionary<string, double> taxScoreCumulative = new Dictionary<string, double>();
+            Dictionary<string, double> totalDenCount = new Dictionary<string, double>();
             string[] taxonomyLevels = { "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"};
 
             foreach (var item in questions)
@@ -431,11 +437,14 @@ namespace Result.Services
                 totalTagCount.Add(item, 0);
                 tagRatingList.Add(item, 0);
                 taxScoreCumulative.Add(item, 0);
+                totalDenCount.Add(item, 0);
+
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
                     {
                         totalTagCount[item] += 1;
+                        totalDenCount[item] += 1 / (float)(question.ConceptTags.Length);
                         if (question.IsCorrect)
                         {
                             tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
@@ -443,7 +452,7 @@ namespace Result.Services
                         }
                     }
                 }
-                tagRatingList[item] /= totalTagCount[item];
+                tagRatingList[item] /= totalDenCount[item];
                 tagRatingList[item] = Math.Round(tagRatingList[item], 2);
                 CumulativeTagScore tag = new CumulativeTagScore();
                 tag.TagName = item;
@@ -468,6 +477,7 @@ namespace Result.Services
             Dictionary<int, int> questionTagCount = new Dictionary<int, int>();
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
             Dictionary<string, double> taxScoreCumulative = new Dictionary<string, double>();
+            Dictionary<string, double> totalDenCount = new Dictionary<string, double>();
             string[] taxonomyLevels = { "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create" };
 
             foreach (var item in questions)
@@ -481,11 +491,13 @@ namespace Result.Services
                 totalTagCount.Add(item, 0);
                 tagRatingList.Add(item, 0);
                 taxScoreCumulative.Add(item, 0);
+                totalDenCount.Add(item, 0);
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
                     {
                         totalTagCount[item] += 1;
+                        totalDenCount[item] += 1 / (float)(question.ConceptTags.Length);
                         if (question.IsCorrect)
                         {
                             tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
@@ -493,12 +505,12 @@ namespace Result.Services
                         }
                     }
                 }
-                tagRatingList[item] /= totalTagCount[item];
+                tagRatingList[item] /= totalDenCount[item];
                 tagRatingList[item] = Math.Round(tagRatingList[item], 2);
             }
             //calculated the value for the current test, now we'll calculate the aggregate
 
-            int numOfQuiz = userResult.QuizResults.Count;
+            int numOfQuiz = userResult.QuizResults.Count-1;
             List<CumulativeTagScore> cumulativeTagScores = userResult.TagWiseCumulativeScore;
 
 
