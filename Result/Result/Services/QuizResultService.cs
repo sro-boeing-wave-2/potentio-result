@@ -609,6 +609,7 @@ namespace Result.Services
             Console.WriteLine(String.Join(",", taxScoreNumberOld));
             Console.WriteLine(String.Join(",", taxScoreNumber));
 
+
             foreach (var item in cumulativeTagScores)
             {
                 //concept common in previous and in new
