@@ -59,6 +59,8 @@ namespace Result.Models
         public string TaxonomyLevel { get; set; }
 
         public double TaxonomyScore { get; set; }
+
+        public List<TaxonomyListAndScore> TaxonomyListAndScores{ get; set; }
     }
 
     public class CumulativeTagScore
@@ -70,6 +72,15 @@ namespace Result.Models
         public string TaxonomyLevelReached { get; set; }
 
         public double TaxonomyScore { get; set; }
+
+        public List<TaxonomyListAndScore> TaxonomyListAndScores { get; set; }
+    }
+
+    public class TaxonomyListAndScore
+    {
+        public string TaxonomyName { get; set; }
+
+        public int TaxonomyScoreNumber { get; set; }
     }
 }
 

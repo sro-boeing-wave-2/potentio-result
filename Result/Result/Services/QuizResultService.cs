@@ -191,6 +191,7 @@ namespace Result.Services
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
             Dictionary<string, double> taxonomyTotalScore = new Dictionary<string, double>();
             Dictionary<string, double> totalDenCount = new Dictionary<string, double>();
+            Dictionary<string, int> taxScoreNumber = new Dictionary<string, int>();
 
 
             string[] taxonomyLevels = {"Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create" };
@@ -207,6 +208,14 @@ namespace Result.Services
                 tagRatingList.Add(item, 0);
                 taxonomyTotalScore.Add(item, 0);
                 totalDenCount.Add(item, 0);
+
+                foreach (var tax in taxonomyLevels)
+                {
+                    taxScoreNumber[tax+"-"+item] = 0;
+                }
+
+
+
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
@@ -218,9 +227,14 @@ namespace Result.Services
                             correctTagCount[item] += 1;
                             tagRatingList[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
                             taxonomyTotalScore[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
+                            taxScoreNumber[question.Taxonomy + "-" + item] += question.DifficultyLevel;
+                            Console.WriteLine(taxScoreNumber[question.Taxonomy + "-" + item]);
                         }
+                        
                     }
                 }
+
+               
 
                 tagRatingList[item] /= totalDenCount[item];
                 tagRatingList[item] = Math.Round(tagRatingList[item], 2);
@@ -236,6 +250,17 @@ namespace Result.Services
                 tag.TagRating = tagRatingList[item];
                 tag.TaxonomyLevel = getTaxonomyLevel(item, questions);
                 tag.TaxonomyScore = taxonomyTotalScore[item];
+
+                List<TaxonomyListAndScore> taxonomyListAndScores = new List<TaxonomyListAndScore>();
+
+                foreach (var tax in taxonomyLevels)
+                {
+                    TaxonomyListAndScore taxonomy = new TaxonomyListAndScore();
+                    taxonomy.TaxonomyName = tax;
+                    taxonomy.TaxonomyScoreNumber = taxScoreNumber[tax+"-"+item];
+                    taxonomyListAndScores.Add(taxonomy);
+                }
+                tag.TaxonomyListAndScores = taxonomyListAndScores;
                 tagWiseResult.Add(tag);
             }
         }
@@ -425,6 +450,7 @@ namespace Result.Services
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
             Dictionary<string, double> taxScoreCumulative = new Dictionary<string, double>();
             Dictionary<string, double> totalDenCount = new Dictionary<string, double>();
+            Dictionary<string, int> taxScoreNumber = new Dictionary<string, int>();
             string[] taxonomyLevels = { "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"};
 
             foreach (var item in questions)
@@ -439,6 +465,12 @@ namespace Result.Services
                 taxScoreCumulative.Add(item, 0);
                 totalDenCount.Add(item, 0);
 
+                foreach (var tax in taxonomyLevels)
+                {
+                    taxScoreNumber[tax + "-" + item] = 0;
+                }
+
+
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
@@ -449,6 +481,7 @@ namespace Result.Services
                         {
                             tagRatingList[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
                             taxScoreCumulative[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
+                            taxScoreNumber[question.Taxonomy + "-" + item] += question.DifficultyLevel;
                         }
                     }
                 }
@@ -459,6 +492,20 @@ namespace Result.Services
                 tag.TagRating = tagRatingList[item];
                 tag.TaxonomyLevelReached = getTaxonomyLevel(item,questions);
                 tag.TaxonomyScore = taxScoreCumulative[item];
+
+                List<TaxonomyListAndScore> taxonomyListAndScores = new List<TaxonomyListAndScore>();
+
+                foreach (var tax in taxonomyLevels)
+                {
+                    TaxonomyListAndScore taxonomy = new TaxonomyListAndScore();
+                    taxonomy.TaxonomyName = tax;
+                    taxonomy.TaxonomyScoreNumber = taxScoreNumber[tax + "-" + item];
+                    taxonomyListAndScores.Add(taxonomy);
+                    Console.WriteLine(taxonomy.TaxonomyName);
+                }
+                tag.TaxonomyListAndScores = taxonomyListAndScores;
+
+
                 cumulativeTagScore.Add(tag);
             }
         }
@@ -478,6 +525,9 @@ namespace Result.Services
             Dictionary<string, double> tagRatingList = new Dictionary<string, double>();
             Dictionary<string, double> taxScoreCumulative = new Dictionary<string, double>();
             Dictionary<string, double> totalDenCount = new Dictionary<string, double>();
+            Dictionary<string, int> taxScoreNumber = new Dictionary<string, int>();
+            Dictionary<string, int> taxScoreNumberOld = new Dictionary<string, int>();
+
             string[] taxonomyLevels = { "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create" };
 
             foreach (var item in questions)
@@ -492,6 +542,13 @@ namespace Result.Services
                 tagRatingList.Add(item, 0);
                 taxScoreCumulative.Add(item, 0);
                 totalDenCount.Add(item, 0);
+
+
+                foreach (var tax in taxonomyLevels)
+                {
+                    taxScoreNumber[tax + "-" + item] = 0;
+                }
+
                 foreach (var question in questions)
                 {
                     if (question.ConceptTags.Contains(item))
@@ -502,6 +559,7 @@ namespace Result.Services
                         {
                             tagRatingList[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
                             taxScoreCumulative[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
+                            taxScoreNumber[question.Taxonomy + "-" + item] += question.DifficultyLevel;
                         }
                     }
                 }
@@ -542,8 +600,21 @@ namespace Result.Services
 
             foreach (var item in cumulativeTagScores)
             {
+               // Console.WriteLine("{}{}{}{}  " + item.TagName);
+                foreach (var item2 in item.TaxonomyListAndScores)
+                {
+                    taxScoreNumberOld[item2.TaxonomyName + "-" + item.TagName] = item2.TaxonomyScoreNumber;
+                }
+            }
+            Console.WriteLine(String.Join(",", taxScoreNumberOld));
+            Console.WriteLine(String.Join(",", taxScoreNumber));
+
+            foreach (var item in cumulativeTagScores)
+            {
+                //concept common in previous and in new
                 if (!h1.Contains(item.TagName))
                 {
+                    Console.WriteLine(item.TagName+"====");
                     CumulativeTagScore score = new CumulativeTagScore();
                     string tagName = item.TagName;
                     double tagRating = item.TagRating;
@@ -563,8 +634,24 @@ namespace Result.Services
                     score.TagRating = newTagRating;
                     score.TaxonomyLevelReached = getHigerTaxonomyLevel(taxLevelOld, taxLevelNew);
                     score.TaxonomyScore = taxScoreNew;
+
+                   
+                        List<TaxonomyListAndScore> taxonomyListAndScores = new List<TaxonomyListAndScore>();
+
+                        foreach (var taxx in taxonomyLevels)
+                        {
+                            TaxonomyListAndScore taxonomy = new TaxonomyListAndScore();
+                            taxonomy.TaxonomyName = taxx;
+                        Console.WriteLine(taxx);
+                            taxonomy.TaxonomyScoreNumber = taxScoreNumber[taxx + "-" + item.TagName] + taxScoreNumberOld[taxx + "-" + item.TagName];
+                            taxonomyListAndScores.Add(taxonomy);
+                        }
+                        score.TaxonomyListAndScores = taxonomyListAndScores;
+                    
+
                     newCumulativeTagScores.Add(score);
                 }
+                //concept in previous but not in new
                 else
                 {
                     CumulativeTagScore score = new CumulativeTagScore();
@@ -572,10 +659,24 @@ namespace Result.Services
                     score.TagRating = item.TagRating;
                     score.TaxonomyLevelReached = item.TaxonomyLevelReached;
                     score.TaxonomyScore = item.TaxonomyScore;
+
+                    List<TaxonomyListAndScore> taxonomyListAndScores = new List<TaxonomyListAndScore>();
+
+                    foreach (var taxx in taxonomyLevels)
+                    {
+                        TaxonomyListAndScore taxonomy = new TaxonomyListAndScore();
+                        taxonomy.TaxonomyName = taxx;
+                        taxonomy.TaxonomyScoreNumber = taxScoreNumberOld[taxx + "-" + item.TagName];
+                        taxonomyListAndScores.Add(taxonomy);
+                    }
+                    score.TaxonomyListAndScores = taxonomyListAndScores;
+
+
                     newCumulativeTagScores.Add(score);
                 }
             }
 
+            //new incoming concept
             foreach (var item in h)
             {
                 CumulativeTagScore score = new CumulativeTagScore();
@@ -583,6 +684,18 @@ namespace Result.Services
                 score.TagRating = tagRatingList[item];
                 score.TaxonomyLevelReached = getTaxonomyLevel(item, questions);
                 score.TaxonomyScore = taxScoreCumulative[item];
+
+                List<TaxonomyListAndScore> taxonomyListAndScores = new List<TaxonomyListAndScore>();
+
+                foreach (var taxx in taxonomyLevels)
+                {
+                    TaxonomyListAndScore taxonomy = new TaxonomyListAndScore();
+                    taxonomy.TaxonomyName = taxx;
+                    taxonomy.TaxonomyScoreNumber = taxScoreNumber[taxx + "-" + item];
+                    taxonomyListAndScores.Add(taxonomy);
+                }
+                score.TaxonomyListAndScores = taxonomyListAndScores;
+
                 newCumulativeTagScores.Add(score);
             }
 
