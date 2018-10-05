@@ -212,11 +212,11 @@ namespace Result.Services
                     if (question.ConceptTags.Contains(item))
                     {
                         totalTagCount[item] += 1;
-                        totalDenCount[item] += 1/(float)(question.ConceptTags.Length);
+                        totalDenCount[item] += question.DifficultyLevel/(float)(question.ConceptTags.Length);
                         if (question.IsCorrect)
                         {
                             correctTagCount[item] += 1;
-                            tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
+                            tagRatingList[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
                             taxonomyTotalScore[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
                         }
                     }
@@ -444,10 +444,10 @@ namespace Result.Services
                     if (question.ConceptTags.Contains(item))
                     {
                         totalTagCount[item] += 1;
-                        totalDenCount[item] += 1 / (float)(question.ConceptTags.Length);
+                        totalDenCount[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
                         if (question.IsCorrect)
                         {
-                            tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
+                            tagRatingList[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
                             taxScoreCumulative[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
                         }
                     }
@@ -497,10 +497,10 @@ namespace Result.Services
                     if (question.ConceptTags.Contains(item))
                     {
                         totalTagCount[item] += 1;
-                        totalDenCount[item] += 1 / (float)(question.ConceptTags.Length);
+                        totalDenCount[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
                         if (question.IsCorrect)
                         {
-                            tagRatingList[item] += 1 / (float)(question.ConceptTags.Length);
+                            tagRatingList[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
                             taxScoreCumulative[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
                         }
                     }
