@@ -383,6 +383,9 @@ namespace Result.Services
                         string resp = JsonConvert.DeserializeObject<Result.Models.Options>(Parseddetail.GetValue("response").ToString()).Raw;
                         string ans = JsonConvert.DeserializeObject<Result.Models.Options>(Parseddetail.GetValue("correctAnswer").ToString()).Raw;
 
+                        resp = resp.Trim();
+                        ans = ans.Trim();
+
                         Console.WriteLine(resp + " " + resp.Length);
                         Console.WriteLine(ans + " "+ ans.Length );
                         question.IsCorrect = (resp == ans);
