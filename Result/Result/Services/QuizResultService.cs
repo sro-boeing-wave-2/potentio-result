@@ -226,7 +226,14 @@ namespace Result.Services
                         {
                             correctTagCount[item] += 1;
                             tagRatingList[item] += question.DifficultyLevel / (float)(question.ConceptTags.Length);
-                            taxonomyTotalScore[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy)+1;
+                            if (taxonomyTotalScore.ContainsKey(item))
+                            {
+                                taxonomyTotalScore[item] += Array.IndexOf(taxonomyLevels, question.Taxonomy) + 1;
+                            }
+                            else
+                            {
+                                taxonomyTotalScore.Add(item, Array.IndexOf(taxonomyLevels, question.Taxonomy) + 1);
+                            }
                             taxScoreNumber[question.Taxonomy + "-" + item] += question.DifficultyLevel;
                             Console.WriteLine(taxScoreNumber[question.Taxonomy + "-" + item]);
                         }
