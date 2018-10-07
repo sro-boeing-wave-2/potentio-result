@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace Result.Services
 {
@@ -237,7 +238,7 @@ namespace Result.Services
                             taxScoreNumber[question.Taxonomy + "-" + item] += question.DifficultyLevel;
                             Console.WriteLine(taxScoreNumber[question.Taxonomy + "-" + item]);
                         }
-                        
+
                     }
                 }
 
@@ -342,7 +343,10 @@ namespace Result.Services
                     string raw = Parseddetail.GetValue("raw").ToString();
                    // string correctOption = Parseddetail.GetValue("correctOption").ToString();
                     string taxonomy = Parseddetail.GetValue("taxonomy").ToString();
-                    
+
+                    taxonomy = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(taxonomy);
+
+
                     Console.WriteLine(conceptTagsString.Substring(1, conceptTagsString.Length -2 ).Split(','));
                     string[] arr = conceptTagsString.Substring(1, conceptTagsString.Length - 2).Split(',');
 
